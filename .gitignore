@@ -4,3 +4,13 @@
 *.jar
 *.war
 *.ear
+*.bat
+
+.project
+.settings/
+
+*/.settings/
+*/target/
+*/bin/
+*/.classpath
+*/.project

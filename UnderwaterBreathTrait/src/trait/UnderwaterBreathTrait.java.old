@@ -1,0 +1,140 @@
+package trait;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+
+import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
+import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
+import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.resolvers.WorldResolver;
+import de.tobiyas.racesandclasses.eventprocessing.events.holderevent.HolderSelectedEvent;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.bypasses.ByPassWorldDisabledCheck;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.bypasses.BypassHolderCheck;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+
+@BypassHolderCheck
+@ByPassWorldDisabledCheck
+public class UnderwaterBreathTrait extends AbstractPassiveTrait {
+	
+	/**
+	 * The default time a player can breath.
+	 * <br>15 Seconds default time.
+	 */
+	private final int DEFAULT_BREATH_TIME = 15 * 20;
+	
+	
+	@TraitInfos(category="passive", traitName="UnderwaterBreathTrait", visible=true)
+	@Override
+	public void importTrait() {
+	}
+
+	
+	@TraitEventsUsed(registerdClasses = {PlayerLoginEvent.class, PlayerChangedWorldEvent.class, HolderSelectedEvent.class})
+	@Override
+	public void generalInit() {
+	}
+
+	
+	@Override
+	public String getName() {
+		return "UnderwaterBreathTrait";
+	}
+
+	
+	@Override
+	protected String getPrettyConfigIntern(){
+		return "breath time: " + operation + value;
+	}
+
+	
+	@Override
+	public boolean isBetterThan(Trait trait) {
+		if(!(trait instanceof UnderwaterBreathTrait)) return false;
+		UnderwaterBreathTrait otherTrait = (UnderwaterBreathTrait) trait;
+		
+		return value >= otherTrait.value;
+	}
+
+	
+	@Override
+	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
+		Player player = null;
+		
+		if(event instanceof PlayerEvent){
+			player = ((PlayerEvent) event).getPlayer();
+		}
+		
+		if(event instanceof HolderSelectedEvent){
+			player = ((HolderSelectedEvent) event).getPlayer();
+		}
+		
+		if(player == null) return TraitResults.False();
+ 		
+		player.setMaximumAir(DEFAULT_BREATH_TIME);
+		if(WorldResolver.isOnDisabledWorld(player)) return TraitResults.True();
+		
+		if(TraitHolderCombinder.checkContainer(player.getName(), this)){
+			double maxAir = player.getMaximumAir();
+			double newMaxAir = this.getNewValue(maxAir);
+
+			if(newMaxAir <= 20){
+				newMaxAir = 20;
+			}
+			
+			player.setMaximumAir((int) newMaxAir);
+			return TraitResults.True();
+		}
+		
+		return TraitResults.True();
+	}
+
+	
+	@TraitConfigurationNeeded( fields = {
+			@TraitConfigurationField(fieldName = "operation", classToExpect = String.class), 
+			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
+		})
+	@Override
+	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+		super.setConfiguration(configMap);
+		
+		operation = (String) configMap.get("operation");
+		value = (Double) configMap.get("value");
+		
+		if(operation.equals("+") || operation.equals("-")){
+			value *= 20;
+		}
+		
+	}
+
+	public static List<String> getHelpForTrait(){
+		List<String> helpList = new LinkedList<String>();
+		helpList.add(ChatColor.YELLOW + "The trait modifies the time you can stay underwater.");
+		return helpList;
+	}
+
+
+	@Override
+	public boolean canBeTriggered(EventWrapper wrapper) {
+		Event event = wrapper.getEvent();
+		if(event instanceof PlayerJoinEvent || event instanceof PlayerChangedWorldEvent || event instanceof HolderSelectedEvent){
+			return true;
+		}
+		
+		return false;
+	}
+}
