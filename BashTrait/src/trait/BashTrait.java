@@ -56,7 +56,7 @@ public class BashTrait extends AbstractPassiveTrait{
 
 	@Override
 	public String getName() {
-		return "DodgeTrait";
+		return "BashTrait";
 	}
 	
 	
@@ -89,7 +89,7 @@ public class BashTrait extends AbstractPassiveTrait{
 			Player player = (Player) Eevent.getDamager();
 			LivingEntity target = (LivingEntity) Eevent.getEntity();
 			
-			int ticks = (int) Math.floor(duration / 20d);
+			int ticks = (int) Math.floor(duration * 20d);
 			if(target instanceof Player){
 				StunAPI.StunPlayer.stunPlayerForTicks(((Player) target).getName(), ticks);
 			}else{
@@ -118,7 +118,7 @@ public class BashTrait extends AbstractPassiveTrait{
 		return value >= otherTrait.value;
 	}
 	
-	@TraitInfos(category="passive", traitName="DodgeTrait", visible=true)
+	@TraitInfos(category="passive", traitName="BashTrait", visible=true)
 	@Override
 	public void importTrait() {
 	}
