@@ -32,7 +32,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
-import de.tobiyas.racesandclasses.vollotile.VollotileCodeManager;
+import de.tobiyas.racesandclasses.vollotile.Vollotile;
 
 public class PermanentPotionTrait extends TickEverySecondsTrait {
 
@@ -116,8 +116,8 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 			player.addPotionEffect(newPotionEffect, true);
 			
 			if(removeParticles){
-				VollotileCodeManager.getVollotileCode().removeParticleEffect(player);
-			}			
+				Vollotile.get().removeParticleEffect(player);
+			}
 		}
 		
 		if(removeParticles && particleTaskID < 0){
@@ -128,7 +128,7 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 					for(String playerName : holder.getHolderManager().getAllPlayersOfHolder(holder)){
 						Player player = Bukkit.getPlayer(playerName);
 						if(player != null && player.isOnline()){
-							VollotileCodeManager.getVollotileCode().removeParticleEffect(player);
+							Vollotile.get().removeParticleEffect(player);
 						}
 					}
 					
