@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
@@ -62,20 +63,19 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 			
 			@Override
 			public void run() {
-				for(String playerName : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-					Player player = Bukkit.getPlayer(playerName);
-					EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player);
-					if(player != null 
+				for(OfflinePlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+					EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player.getPlayer());
+					if(player != null  && wrapper != null && player.isOnline()
 							&& !checkRestrictions(wrapper) 
 							&& canBeTriggered(wrapper)){
 						
 						EntityHealEvent regainHealthEvent = 
-								CompatibilityModifier.EntityHeal.safeGenerate(player, heal, RegainReason.REGEN);
+								CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), heal, RegainReason.REGEN);
 						
 						Bukkit.getPluginManager().callEvent(regainHealthEvent);
 						if(!regainHealthEvent.isCancelled()){
 							double newHealValue = CompatibilityModifier.EntityRegainHealth.safeGetAmount(regainHealthEvent);
-							CompatibilityModifier.BukkitPlayer.safeHeal(newHealValue, player);
+							CompatibilityModifier.BukkitPlayer.safeHeal(newHealValue, player.getPlayer());
 						}
 						
 						plugin.getStatistics().traitTriggered(SpecificRegenerationTrait.this);

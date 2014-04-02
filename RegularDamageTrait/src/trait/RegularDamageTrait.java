@@ -21,11 +21,10 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
@@ -63,19 +62,18 @@ public class RegularDamageTrait extends AbstractBasicTrait {
 			
 			@Override
 			public void run() {
-				for(String playerName : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-					Player player = Bukkit.getPlayer(playerName);
-					EventWrapper wrapper = EventWrapperFactory.buildFromEvent(new PlayerBedEnterEvent(player, null));
-					if(player != null 
+				for(OfflinePlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+					EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player.getPlayer());
+					if(player != null && wrapper != null
 							&& !checkRestrictions(wrapper) 
 							&& canBeTriggered(wrapper)){
 						
 						EntityDamageEvent damageEvent = 
-								CompatibilityModifier.EntityDamage.safeCreateEvent(player, DamageCause.MAGIC, damage);
+								CompatibilityModifier.EntityDamage.safeCreateEvent(player.getPlayer(), DamageCause.MAGIC, damage);
 						
 						Bukkit.getPluginManager().callEvent(damageEvent);
 						if(!damageEvent.isCancelled()){
-							player.damage(CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent));							
+							player.getPlayer().damage(CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent));							
 						}
 						
 						plugin.getStatistics().traitTriggered(RegularDamageTrait.this);

@@ -130,7 +130,7 @@ public class VampirismTrait extends AbstractPassiveTrait{
 		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
 		
 		Player causer = wrapper.getPlayer();
-		if(TraitHolderCombinder.checkContainer(causer.getName(), this)){
+		if(TraitHolderCombinder.checkContainer(causer, this)){
 			return true;
 		}
 		

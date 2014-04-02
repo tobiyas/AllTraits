@@ -25,6 +25,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -162,8 +163,8 @@ public class PoisonWeaponListener implements Listener{
 		
 		if(!hasPoison) return;
 		
-		String playerName = event.getWhoClicked().getName();
-		if(trait.getTraitHolder().getHolderManager().getHolderOfPlayer(playerName) 
+		OfflinePlayer player = Bukkit.getOfflinePlayer(event.getWhoClicked().getUniqueId());
+		if(trait.getTraitHolder().getHolderManager().getHolderOfPlayer(player) 
 				!= trait.getTraitHolder()){
 			event.setCancelled(true);
 		}

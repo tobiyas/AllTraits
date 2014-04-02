@@ -149,8 +149,8 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			if(entity.getType() != EntityType.PLAYER) return false;
 			Player player = (Player) entity;
 			
-			double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getName());
-			double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getName());
+			double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player);
+			double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player);
 			double healthPercent = 100 * currentHealth / maxHealth;
 			if(healthPercent > activationLimit) return false;
 			if(!checkIfActive(player)) return false;
@@ -168,7 +168,7 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			if(entity == null || entity.getType() != EntityType.PLAYER) return false;
 			Player player = (Player) entity;
 			
-			if(TraitHolderCombinder.checkContainer(player.getName(), this)){
+			if(TraitHolderCombinder.checkContainer(player, this)){
 				if(!checkIfActive(player)) return false;
 				
 				return true;

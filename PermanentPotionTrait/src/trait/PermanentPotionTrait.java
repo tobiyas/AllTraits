@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -125,10 +126,9 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 				
 				@Override
 				public void run() {
-					for(String playerName : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-						Player player = Bukkit.getPlayer(playerName);
+					for(OfflinePlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
 						if(player != null && player.isOnline()){
-							Vollotile.get().removeParticleEffect(player);
+							Vollotile.get().removeParticleEffect(player.getPlayer());
 						}
 					}
 					

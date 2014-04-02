@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -69,10 +70,9 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 				
 				@Override
 				public void run() {
-					for(String playerName : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-						Player player = Bukkit.getPlayer(playerName);
+					for(OfflinePlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
 						if(player != null && player.isOnline()){
-							Bukkit.getPluginManager().callEvent(new ManaRegenerationEvent(player, value));
+							Bukkit.getPluginManager().callEvent(new ManaRegenerationEvent(player.getPlayer(), value));
 						}
 					}
 				}
@@ -111,7 +111,7 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 		Player player = manaRegEvent.getPlayer();
 		double amount = manaRegEvent.getAmount();
 		
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getName()).getManaManager()
+		plugin.getPlayerManager().getSpellManagerOfPlayer(player).getManaManager()
 			.fillMana(amount);
 		return TraitResults.True();
 	}
@@ -144,7 +144,7 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 		
 		Player player = wrapper.getPlayer();
 		return player != null && player.isOnline() &&
-				!plugin.getPlayerManager().getSpellManagerOfPlayer(player.getName())
+				!plugin.getPlayerManager().getSpellManagerOfPlayer(player)
 					.getManaManager().isManaFull();
 	}
 }

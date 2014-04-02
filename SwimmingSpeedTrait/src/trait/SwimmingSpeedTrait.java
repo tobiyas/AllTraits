@@ -82,7 +82,7 @@ public class SwimmingSpeedTrait extends AbstractBasicTrait {
 			
 			
 			if(loginEvent.getResult() == Result.ALLOWED){
-				if(TraitHolderCombinder.checkContainer(player.getName(), this)){					
+				if(TraitHolderCombinder.checkContainer(player, this)){					
 					return new TraitResults( setPlayerSpeed(player));
 				}
 			}

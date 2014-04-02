@@ -78,7 +78,7 @@ public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
 		if(!(Eevent.getDamager() instanceof Player)) return TraitResults.False();
 		Player causer = (Player) Eevent.getDamager();
  		
-		if(TraitHolderCombinder.checkContainer(causer.getName(), this)){
+		if(TraitHolderCombinder.checkContainer(causer, this)){
 			if(!checkItemIsSword(causer.getItemInHand())) return TraitResults.False();
 			
 			double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
