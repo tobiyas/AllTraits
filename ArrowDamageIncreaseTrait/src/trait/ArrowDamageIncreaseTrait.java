@@ -84,7 +84,7 @@ public class ArrowDamageIncreaseTrait extends AbstractPassiveTrait {
 				|| shooter.getType() != EntityType.PLAYER) return TraitResults.False();
 		
 		Player playerShooter = (Player) shooter;
-		if(TraitHolderCombinder.checkContainer(playerShooter, this)){
+		if(TraitHolderCombinder.checkContainer(playerShooter.getUniqueId(), this)){
 			double oldDamage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
 			double newValue = getNewValue(oldDamage);
 			

@@ -96,8 +96,8 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 		if(entity.getType() != EntityType.PLAYER) return TraitResults.False();
 		Player player = (Player) entity;
 		
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player);
-		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player);
+		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
+		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId());
 		double healthPercent = 100 * currentHealth / maxHealth;
 		if(healthPercent > activationLimit) return TraitResults.False();
 		
@@ -152,8 +152,8 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 		if(wrapper.getPlayerAction() != PlayerAction.TAKE_DAMAGE) return false;
 		Player player = wrapper.getPlayer();
 		
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player);
-		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player);
+		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
+		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId());
 		double healthPercent = 100 * currentHealth / maxHealth;
 		if(healthPercent > activationLimit) return false;
 		

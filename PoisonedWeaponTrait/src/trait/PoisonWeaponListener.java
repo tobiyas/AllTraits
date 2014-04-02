@@ -164,7 +164,7 @@ public class PoisonWeaponListener implements Listener{
 		if(!hasPoison) return;
 		
 		OfflinePlayer player = Bukkit.getOfflinePlayer(event.getWhoClicked().getUniqueId());
-		if(trait.getTraitHolder().getHolderManager().getHolderOfPlayer(player) 
+		if(trait.getTraitHolder().getHolderManager().getHolderOfPlayer(player.getUniqueId()) 
 				!= trait.getTraitHolder()){
 			event.setCancelled(true);
 		}

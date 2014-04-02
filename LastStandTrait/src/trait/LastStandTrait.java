@@ -90,8 +90,8 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 		
 		Player player = (Player) entity;
 		
-		double health = plugin.getPlayerManager().getHealthOfPlayer(player) - Eevent.getDamage();
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player);
+		double health = plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId()) - Eevent.getDamage();
+		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
 		double percent = 100 * health / maxHealth;
 		
 		if(percent <= activationLimit){
@@ -158,8 +158,8 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 		if(!(entity instanceof Player)) return false;
 		Player player = (Player) entity;
 		
-		double health = plugin.getPlayerManager().getHealthOfPlayer(player) - Eevent.getDamage();
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player);
+		double health = plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId()) - Eevent.getDamage();
+		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
 		double percent = 100 * health / maxHealth;
 		
 		if(percent <= activationLimit){

@@ -97,7 +97,7 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 
 	@Override
 	protected void magicSpellTriggered(Player player, TraitResults result) {		
-		if(plugin.getPlayerManager().getSpellManagerOfPlayer(player).getManaManager().isManaFull()){
+		if(plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().isManaFull()){
 			LanguageAPI.sendTranslatedMessage(player, Keys.mana_already_full);
 			result.setTriggered(false);
 			return;
@@ -128,7 +128,7 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 			return;
 		}
 		
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player).getManaManager().fillMana(newValue);
+		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().fillMana(newValue);
 		CompatibilityModifier.BukkitPlayer.safeDamage(newDamage, player);
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_lifetap_success, 

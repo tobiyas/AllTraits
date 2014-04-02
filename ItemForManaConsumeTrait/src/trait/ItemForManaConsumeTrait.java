@@ -107,7 +107,7 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 
 	@Override
 	protected void magicSpellTriggered(Player player, TraitResults result) {		
-		if(plugin.getPlayerManager().getSpellManagerOfPlayer(player).getManaManager().isManaFull()){
+		if(plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().isManaFull()){
 			LanguageAPI.sendTranslatedMessage(player, Keys.mana_already_full);
 			result.setTriggered(false);
 			return;
@@ -125,7 +125,7 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 			return;
 		}
 		
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player).getManaManager().fillMana(newValue);
+		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().fillMana(newValue);
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_consume_success,
 				"value", String.valueOf(newValue), "material", materialForCasting.name());

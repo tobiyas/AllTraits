@@ -18,10 +18,11 @@ package trait;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -62,7 +63,8 @@ public class RegularDamageTrait extends AbstractBasicTrait {
 			
 			@Override
 			public void run() {
-				for(OfflinePlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+				for(UUID playerUUID : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+					Player player = Bukkit.getPlayer(playerUUID);
 					EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player.getPlayer());
 					if(player != null && wrapper != null
 							&& !checkRestrictions(wrapper) 

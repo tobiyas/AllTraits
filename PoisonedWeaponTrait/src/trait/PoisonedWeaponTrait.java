@@ -120,7 +120,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 		if(!(Eevent.getDamager() instanceof Player)) return TraitResults.False();
 		Player causer = (Player) Eevent.getDamager();
  		
-		if(TraitHolderCombinder.checkContainer(causer, this)){
+		if(TraitHolderCombinder.checkContainer(causer.getUniqueId(), this)){
 			if(!checkItemIsPoisoned(causer.getItemInHand())) return TraitResults.False();
 			
 			LivingEntity target = (LivingEntity) Eevent.getEntity();
