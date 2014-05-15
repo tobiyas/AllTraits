@@ -79,6 +79,13 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		Event event = wrapper.getEvent();
+		
+		//indicator for ticks.
+		if(event == null && wrapper.getPlayer() != null){
+			//we have a tick event.
+			return true;
+		}
+		
 		if(event instanceof AfterClassChangedEvent){
 			AfterClassChangedEvent classEvent = (AfterClassChangedEvent) event;
 			if(holder == classEvent.getOldClass()){
@@ -91,11 +98,6 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 			if(holder == classEvent.getOldRace()){
 				setNewSpeed(classEvent.getPlayer(), DEFAULT_SPEED);
 			}
-		}
-		
-		//indicator for ticks.
-		if(event instanceof PlayerBedEnterEvent){
-			return true;
 		}
 		
 		return false;

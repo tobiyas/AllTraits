@@ -120,14 +120,14 @@ public class SlowFallTrait extends AbstractContinousCostMagicSpellTrait {
 
 	@Override
 	protected boolean activateIntern(Player player) {
-		LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
+		//LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
 		return true;
 	}
 
 	
 	protected boolean deactivateIntern(Player player){
-		LanguageAPI.sendTranslatedMessage(player,  Keys.trait_faded,
-				"name", getDisplayName());
+		//LanguageAPI.sendTranslatedMessage(player,  Keys.trait_faded,
+		//		"name", getDisplayName());
 		
 		player.setFallDistance(0);
 		return true;

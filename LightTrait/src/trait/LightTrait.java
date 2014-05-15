@@ -25,7 +25,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -33,7 +32,6 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractContinousCostMagicSpellTrait;
-import de.tobiyas.racesandclasses.translation.languages.Keys;
 
 public class LightTrait extends AbstractContinousCostMagicSpellTrait{
 
@@ -108,8 +106,8 @@ public class LightTrait extends AbstractContinousCostMagicSpellTrait{
 				return TraitResults.False();
 			}
 			
-			Location from = ((PlayerMoveEvent) eventWrapper.getEvent()).getFrom();
-			Location to = ((PlayerMoveEvent) eventWrapper.getEvent()).getTo();
+			Location from = ((PlayerMoveEvent) eventWrapper.getEvent()).getFrom().subtract(0,1,0);
+			Location to = ((PlayerMoveEvent) eventWrapper.getEvent()).getTo().subtract(0,1,0);
 			if(from.getBlock().equals(to.getBlock())) return TraitResults.False();
 			
 			setLightUnderPlayer(player, from, to);
@@ -123,9 +121,9 @@ public class LightTrait extends AbstractContinousCostMagicSpellTrait{
 	
 	
 	private void setLightUnderPlayer(Player player, Location from, Location to){
-		if(from != null) player.sendBlockChange(from, from.getBlock().getType().getId(), from.getBlock().getData());
+		if(from != null && from.getBlock().getType().isSolid()) player.sendBlockChange(from, from.getBlock().getType().getId(), from.getBlock().getData());
 		
-		if(to != null && to.getBlock().getType() != Material.AIR){
+		if(to != null && to.getBlock().getType() != Material.AIR && to.getBlock().getType().isSolid()){
 			player.sendBlockChange(to, Material.GLOWSTONE.getId(), (byte)0);
 		}
 	}
@@ -133,16 +131,16 @@ public class LightTrait extends AbstractContinousCostMagicSpellTrait{
 
 	@Override
 	protected boolean activateIntern(final Player player) {
-		LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
-		setLightUnderPlayer(player, null, player.getLocation());
+		//LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
+		setLightUnderPlayer(player, null, player.getLocation().clone().subtract(0, 1, 0));
 		return true;
 	}
 
 	
 	@Override
 	protected boolean deactivateIntern(Player player){
-		LanguageAPI.sendTranslatedMessage(player, Keys.trait_faded, "name", getDisplayName());
-		Location current = player.getLocation();
+		//LanguageAPI.sendTranslatedMessage(player, Keys.trait_faded, "name", getDisplayName());
+		Location current = player.getLocation().clone().subtract(0, 1, 0);
 		player.sendBlockChange(current, current.getBlock().getType().getId(), current.getBlock().getData());
 		return true;
 	}

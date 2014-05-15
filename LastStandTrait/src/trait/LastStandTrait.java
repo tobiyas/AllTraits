@@ -15,6 +15,7 @@
  ******************************************************************************/
 package trait;
 
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,8 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 	
 	@Override
 	protected String getPrettyConfigIntern(){
-		return " uplink-Time: " + (int) cooldownTime + " secs, heals: " + (int) value;
+		DecimalFormat format = new DecimalFormat("0.0");
+		return " uplink-Time: " + cooldownTime + " secs, heals: " + format.format(value);
 	}
 
 	@TraitConfigurationNeeded(fields = {
@@ -80,6 +82,7 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 	@Override
 	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
+		
 		value = (Double) configMap.get("value");
 	}
 

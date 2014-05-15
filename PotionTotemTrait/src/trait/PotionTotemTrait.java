@@ -84,7 +84,6 @@ public class PotionTotemTrait extends AbstractTotemTrait {
 	@TraitInfos(category = "totem", traitName = "PotionTotemTrait", visible = true)
 	@Override
 	public void importTrait() {
-		super.importTrait();
 	}
 
 

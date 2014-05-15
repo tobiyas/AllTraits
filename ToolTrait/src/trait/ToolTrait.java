@@ -20,10 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.event.Event;
+import org.bukkit.Material;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
+import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -35,15 +38,16 @@ import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedExcepti
 
 public class ToolTrait extends AbstractPassiveTrait{
 
-	@SuppressWarnings("unused")
-	private boolean[] toolPerms;
-	private String toolsPermsString;
+	private List<Material> allowed = new LinkedList<Material>();
+	private List<Material> forbidden = new LinkedList<Material>();
+	
+	private boolean allowNonForbidden = false;
 	
 	public ToolTrait(){
 	}
 	
 	
-	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class})
+	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class, EntityDamageByEntityEvent.class})
 	@Override
 	public void generalInit(){
 	}
@@ -56,54 +60,97 @@ public class ToolTrait extends AbstractPassiveTrait{
 
 	@Override
 	protected String getPrettyConfigIntern(){
-		return toolsPermsString;
+		return "Well, yes...";
 	}
 
 	
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(fieldName = "forbid", classToExpect = String.class)
+			@TraitConfigurationField(fieldName = "tools", classToExpect = List.class, optional = true),
+			@TraitConfigurationField(fieldName = "allowNonForbidden", classToExpect = Boolean.class, optional = true),			
 		})
 	@Override
 	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
-		toolsPermsString = (String) configMap.get("forbid");
-		toolPerms = readToolsUsable(toolsPermsString);
+		
+		forbidden.clear();
+		allowed.clear();
+		
+		if(configMap.containsKey("tools")){
+			@SuppressWarnings("unchecked")
+			List<String> toParse = (List<String>) configMap.get("forbid");
+			for(String matName : toParse){
+				boolean notAllowed = matName.charAt(0) == '-';
+				matName = matName.replace("+", "").replace("-", "").toUpperCase();
+				
+				try{
+					Material mat = Material.valueOf(matName);
+					if(mat == null) continue;
+						
+					if(notAllowed){
+						forbidden.add(mat);
+					}else{
+						allowed.add(mat);
+					}
+				}catch(Throwable exp){ continue; }
+			}
+		}
+		
+		if(configMap.containsKey("allowNonForbidden")){
+			allowNonForbidden = (Boolean) configMap.get("allowNonForbidden");
+		}
+		
+		
 	}
 	
-	protected boolean[] readToolsUsable(String toolsUsable){
-		boolean[] toolsUsableArray = new boolean[]{false, false, false, false, false, false};
-		if(toolsUsable.contains("wood")){
-			toolsUsableArray[0] = true;
-		}
-		
-		if(toolsUsable.contains("stone")){
-			toolsUsableArray[1] = true;
-		}
-		
-		if(toolsUsable.contains("iron")){
-			toolsUsableArray[2] = true;
-		}
-		
-		if(toolsUsable.contains("gold")){
-			toolsUsableArray[3] = true;
-		}
-		
-		if(toolsUsable.contains("diamond")){
-			toolsUsableArray[4] = true;
-		}
-		
-		return toolsUsableArray;
-	}
-	
-
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
-		if(!(event instanceof PlayerInteractEvent)) return TraitResults.False();
-		//TODO implement me
-		return TraitResults.False();
+	public TraitResults trigger(EventWrapper eventWrapper) {   
+		ItemStack interactingWith = null;
+
+		if(eventWrapper.getPlayer() != null) interactingWith = eventWrapper.getPlayer().getItemInHand();
+		if(interactingWith == null) return TraitResults.False();
+		
+		if(isOnForbidList(interactingWith)) {
+			eventWrapper.getPlayer().sendMessage(ChatColor.RED + "You may not use this Tool.");
+			return TraitResults.False();
+		}
+		
+		
+		if(!isOnAllowList(interactingWith)) {
+			eventWrapper.getPlayer().sendMessage(ChatColor.RED + "You may not use this Tool.");			
+			return TraitResults.False();
+		}
+		
+		return TraitResults.True();
 	}
 	
 	
+	/**
+	 * Checks if the Tool is on the allowed List.
+	 * 
+	 * @param interactingWith
+	 * @return
+	 */
+	private boolean isOnAllowList(ItemStack interactingWith) {
+		if(allowNonForbidden) return false;
+		
+		Material mat = interactingWith.getType();
+		if(allowed.contains(mat)) return false;
+		
+		return true;
+	}
+
+
+	/**
+	 * Checks if the tool is on the forbidlist.
+	 * 
+	 * @param interactingWith
+	 * @return
+	 */
+	private boolean isOnForbidList(ItemStack interactingWith) {
+		return forbidden.contains(interactingWith.getType());
+	}
+
+
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
 		helpList.add(ChatColor.RED + "Nothing to see here yet.");
@@ -113,7 +160,6 @@ public class ToolTrait extends AbstractPassiveTrait{
 	
 	@Override
 	public boolean isBetterThan(Trait trait) {
-		//TODO not implemented yet
 		return true;
 	}
 
@@ -125,7 +171,8 @@ public class ToolTrait extends AbstractPassiveTrait{
 
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper){
-		// TODO Auto-generated method stub
-		return true;
+		PlayerAction action = wrapper.getPlayerAction();
+		if(action == PlayerAction.DO_DAMAGE || action == PlayerAction.INTERACT_BLOCK || action == PlayerAction.INTERACT_AIR || action == PlayerAction.INTERACT_ENTITY) return true;
+		return false;
 	}
 }

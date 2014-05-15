@@ -25,6 +25,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
+import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapperFactory;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
@@ -45,6 +46,11 @@ public class SunDamageTrait extends TickEverySecondsTrait {
 	 */
 	private boolean standing = true;
 	
+	/**
+	 * If the trait can kill yourself.
+	 */
+	private boolean canKill = false;
+	
 
 	@Override
 	public String getName() {
@@ -54,7 +60,8 @@ public class SunDamageTrait extends TickEverySecondsTrait {
 
 	@TraitConfigurationNeeded( fields = {
 			@TraitConfigurationField(fieldName = "damage", classToExpect = Double.class),
-			@TraitConfigurationField(fieldName = "standing", classToExpect = Boolean.class, optional = true)
+			@TraitConfigurationField(fieldName = "standing", classToExpect = Boolean.class, optional = true),
+			@TraitConfigurationField(fieldName = "canKill", classToExpect = Boolean.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
@@ -65,6 +72,10 @@ public class SunDamageTrait extends TickEverySecondsTrait {
 		
 		if(configMap.containsKey("standing")){
 			standing = (Boolean) configMap.get("standing");
+		}
+		
+		if(configMap.containsKey("canKill")){
+			canKill = (Boolean) configMap.get("canKill");
 		}
 		
 		onlyOnDay = true;
@@ -90,21 +101,26 @@ public class SunDamageTrait extends TickEverySecondsTrait {
 		Player player = wrapper.getPlayer();
 		int playerYLocation = player.getLocation().getBlockY();
 		int highestLocation = player.getWorld().getHighestBlockYAt(player.getLocation());
-		if(highestLocation < playerYLocation) return false;
+		if(playerYLocation < highestLocation) return false;
 
 		return true;
 	}
 
 	@Override
 	protected boolean tickDoneForPlayer(Player player) {
+		if(!canBeTriggered(EventWrapperFactory.buildOnlyWithplayer(player))) return false;
+		
 		EntityDamageEvent damageEvent = CompatibilityModifier.EntityDamage.safeCreateEvent(player, DamageCause.FIRE, damage);
 		plugin.fireEventToBukkit(damageEvent);
 		
-		if(!damageEvent.isCancelled() || damageEvent.getDamage() <= 0){
+		if(damageEvent.isCancelled() || damageEvent.getDamage() <= 0){
 			return false;
 		}
 		
-		CompatibilityModifier.BukkitPlayer.safeDamage(CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent), player);
+		double newValue = CompatibilityModifier.BukkitPlayer.safeGetHealth(player) - damageEvent.getDamage();
+		if(canKill || newValue >= 0){
+			CompatibilityModifier.BukkitPlayer.safeDamage(CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent), player);
+		}
 		return true;
 	}
 

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -28,6 +29,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -53,6 +55,11 @@ public class JumpHeightIncreaseTrait extends AbstractPassiveTrait {
 	 */
 	private Set<String> preventNextFallDamage = new HashSet<String>();
 	
+	/**
+	 * If the Falldamage should be prevented
+	 */
+	private boolean preventFalldamage = false;
+	
 	
 	@TraitEventsUsed(registerdClasses = {PlayerMoveEvent.class, EntityDamageEvent.class})
 	@Override
@@ -70,7 +77,8 @@ public class JumpHeightIncreaseTrait extends AbstractPassiveTrait {
 	}
 
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
+			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class),
+			@TraitConfigurationField(fieldName = "preventFalldamage", classToExpect = Boolean.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
@@ -78,28 +86,35 @@ public class JumpHeightIncreaseTrait extends AbstractPassiveTrait {
 		
 		value = (Double) configMap.get("value");
 		
-		//value = Math.sqrt(value * 1.4) / 2.8;
-		
-		//if(value < 0.2) value = 0.2; //if value == 0 player could not even jump 1 block up.
+		if(configMap.containsKey("preventFalldamage")){
+			preventFalldamage = (Boolean) configMap.get("preventFalldamage");
+		}
 	}
 	
+	
+	/**
+	 * The ticks to Prevent fall damage
+	 */
+	private final int ticksToPreventFallDamage = 30;
 	
 	@Override
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		if(!(event instanceof PlayerMoveEvent)) return TraitResults.False();
 		
 		PlayerMoveEvent Eevent = (PlayerMoveEvent) event;
-		Player player = Eevent.getPlayer();
+		final Player player = Eevent.getPlayer();
 
 		if(Eevent.getFrom().getY() < Eevent.getTo().getY()
 				&& !jumpingPlayer.contains(player.getName())){
 			
-			//Vector vector = player.getVelocity();
-			//vector.setY(value);
-			
-			//player.setVelocity(vector);
 			jumpingPlayer.add(player.getName());
-			preventNextFallDamage.add(player.getName());
+			if(preventFalldamage) {
+				preventNextFallDamage.add(player.getName());
+				Bukkit.getScheduler().scheduleSyncDelayedTask((JavaPlugin)plugin, new Runnable(){ 
+						@Override public void run(){ preventNextFallDamage.remove(player.getName()); 
+					}}, ticksToPreventFallDamage);
+			}
+			
 			player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, 20 * 1, (int) value));
 			return TraitResults.True();
 		}
@@ -141,7 +156,6 @@ public class JumpHeightIncreaseTrait extends AbstractPassiveTrait {
 				if(damageEvent.getCause() == DamageCause.FALL){
 					if(preventNextFallDamage.contains(player.getName())){
 						damageEvent.setCancelled(true);
-						preventNextFallDamage.remove(player.getName());
 						return true;
 					}
 				}

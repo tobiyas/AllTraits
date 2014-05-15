@@ -28,20 +28,19 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.AbstractTotemTrait;
-import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class HealTotemTrait extends AbstractTotemTrait {
+public class ManaRegenerationTotemTrait extends AbstractTotemTrait {
 
 	/**
-	 * The Value to heal.
+	 * The Value to regenerate Mana.
 	 */
 	private double value = 1;
 	
 
 	@Override
 	public String getName() {
-		return "HealTotemTrait";
+		return "ManaRegenerationTotemTrait";
 	}
 
 
@@ -59,12 +58,12 @@ public class HealTotemTrait extends AbstractTotemTrait {
 
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
-		helpList.add(ChatColor.YELLOW + "This Trait places a totem on the ground that heals everyone in range.");
+		helpList.add(ChatColor.YELLOW + "This Trait places a totem on the ground that fills Mana for everyone in range.");
 		return helpList;
 	}
 	
 
-	@TraitInfos(category = "totem", traitName = "HealTotemTrait", visible = true)
+	@TraitInfos(category = "totem", traitName = "ManaRegenerationTotemTrait", visible = true)
 	@Override
 	public void importTrait() {
 	}
@@ -78,7 +77,7 @@ public class HealTotemTrait extends AbstractTotemTrait {
 
 	@Override
 	protected void tickOn(TotemInfos infos, Player player) {
-		CompatibilityModifier.BukkitPlayer.safeHeal(value, player);
+		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().fillMana(value);
 		player.getLocation().getWorld().playEffect(player.getLocation().add(0, 1, 0), Effect.ENDER_SIGNAL, 0);
 	}
 

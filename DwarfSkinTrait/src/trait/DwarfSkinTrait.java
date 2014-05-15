@@ -15,10 +15,13 @@
  ******************************************************************************/
 package trait;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -26,6 +29,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.APIs.CooldownApi;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
@@ -49,6 +53,11 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 	private static int duration = 10;
 	private static double activationLimit = 30;
 	
+	/**
+	 * The Set of active Players.
+	 */
+	private final Set<String> currentlyActive = new HashSet<String>();
+	
 
 	public DwarfSkinTrait(){
 	}
@@ -56,7 +65,7 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 	
 	@TraitEventsUsed(registerdClasses = {EntityDamageByEntityEvent.class})
 	@Override
-	public void generalInit() {		
+	public void generalInit() {
 		TraitConfig config = plugin.getConfigManager().getTraitConfigManager().getConfigOfTrait(getName());
 		if(config != null){
 			duration = (Integer) config.getValue("trait.duration", 10);
@@ -88,21 +97,40 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 	
 	
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
+	public TraitResults trigger(EventWrapper eventWrapper) {   
+		Event event = eventWrapper.getEvent();
 		if(!(event instanceof EntityDamageEvent)) return TraitResults.False();
 		EntityDamageEvent Eevent = (EntityDamageEvent) event;
 		Entity entity = Eevent.getEntity();
 		
 		if(entity.getType() != EntityType.PLAYER) return TraitResults.False();
-		Player player = (Player) entity;
+		final Player player = (Player) entity;
 		
 		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
 		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId());
 		double healthPercent = 100 * currentHealth / maxHealth;
 		if(healthPercent > activationLimit) return TraitResults.False();
 		
-		active(player);
-		if(checkIfActive(player)){
+		
+		if(!currentlyActive.contains(player.getName())){
+			currentlyActive.add(player.getName());
+			
+			activateMessage(player);
+			Bukkit.getScheduler().runTaskLater((JavaPlugin)plugin, new Runnable() {
+				
+				@Override
+				public void run() {
+					currentlyActive.remove(player.getName());
+					
+					int leftCooldown = cooldownTime - duration;
+					if(leftCooldown > 0){
+						CooldownApi.setPlayerCooldown(player.getName(), "trait." + getDisplayName(), leftCooldown);
+					}
+				}
+			}, 20 * duration);
+		}
+		
+		if(currentlyActive.contains(player.getName())){
 			double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
 			double newValue = getNewValue(oldValue);
 			
@@ -113,15 +141,9 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 		return TraitResults.False();
 	}
 	
-	private void active(Player player){
+	private void activateMessage(Player player){
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
 		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), duration, Keys.trait_faded, "name", getDisplayName());
-	}
-	
-	
-	private boolean checkIfActive(Player player){
-		int remainingTime = CooldownApi.getCooldownOfPlayer(player.getName(), "trait." + getName());
-		return (remainingTime - (cooldownTime - duration)) > 0;
 	}
 	
 	
@@ -164,6 +186,13 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 	@Override
 	public boolean notifyTriggeredUplinkTime(EventWrapper wrapper) {
 		return false;
+	}
+	
+	@Override
+	public boolean checkRestrictions(EventWrapper arg0) {
+		
+		
+		return super.checkRestrictions(arg0);
 	}
 	
 }
