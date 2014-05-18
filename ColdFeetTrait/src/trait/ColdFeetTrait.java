@@ -26,6 +26,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -57,10 +58,13 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 	private boolean turnBack = true;
 	
 	
-	private List<String> coldFeetList = new LinkedList<String>();
+	private final List<String> coldFeetList = new LinkedList<String>();
+	
+	private final List<ScheduleBackToWater> blocks = new LinkedList<ScheduleBackToWater>();
 	
 	
-	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class, PlayerMoveEvent.class})
+	@TraitEventsUsed(bypassClasses = {BlockBreakEvent.class},
+			registerdClasses = {PlayerInteractEvent.class, PlayerMoveEvent.class})
 	@Override
 	public void generalInit() {
 	}
@@ -116,6 +120,16 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
+		if(wrapper.getEvent() instanceof BlockBreakEvent){
+			BlockBreakEvent event = (BlockBreakEvent) wrapper.getEvent();
+			for(ScheduleBackToWater thread : blocks){
+				if(thread.getBlock() == event.getBlock()){
+					event.setCancelled(true);
+					return false;
+				}
+			}
+		}
+		
 		if(wrapper.getPlayerAction() == PlayerAction.PLAYER_MOVED){
 			return coldFeetList.contains(wrapper.getPlayer().getName());
 		}
@@ -187,6 +201,11 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 			
 			return TraitResults.False();
 		}
+		
+		if(eventWrapper.getEvent() instanceof BlockBreakEvent){
+			
+		}
+		
 		return result;
 	}
 

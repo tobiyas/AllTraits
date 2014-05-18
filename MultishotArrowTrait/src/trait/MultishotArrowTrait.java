@@ -130,17 +130,16 @@ public class MultishotArrowTrait extends AbstractArrow {
 	 * @return true if worked, false otherwise.
 	 */
 	private boolean removeArrow(Player shooter) {
-		for(ItemStack item : shooter.getInventory().getContents()){
-			if(item != null && item.getType() == Material.ARROW){
-				int newValue = item.getAmount() - 1;
-				if(newValue == 0){
-					item.setType(Material.AIR);
-				}else{
-					item.setAmount(newValue);
-				}
+		for(int i = 0; i < shooter.getInventory().getSize(); i++){
+			ItemStack item = shooter.getInventory().getItem(i);
+			if(item == null || item.getType() != Material.ARROW) continue;
+			
+			int newValue = item.getAmount() - 1;
+			item.setAmount(newValue);
+			if(newValue > 0) shooter.getInventory().setItem(i, item);
+			else shooter.getInventory().setItem(i, null);
 
-				return true;
-			}
+			return true;
 		}
 
 		return false;

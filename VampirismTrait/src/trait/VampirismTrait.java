@@ -22,6 +22,7 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -79,7 +80,10 @@ public class VampirismTrait extends AbstractPassiveTrait{
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 		double damage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
 		
-		Player damager = (Player) Eevent.getDamager();
+		boolean isArrow = eventWrapper.isArrowInvolved();
+		Player damager = (Player) (isArrow ? 
+				((Arrow)Eevent.getDamager()).getShooter() : 
+					Eevent.getDamager());
 		
 		double regain = damage * (value);
 		EntityRegainHealthEvent healEvent 

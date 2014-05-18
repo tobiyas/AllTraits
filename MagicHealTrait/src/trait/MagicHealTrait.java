@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -111,7 +112,7 @@ public class MagicHealTrait extends AbstractMagicSpellTrait {
 		if(player.isSneaking()){
 			target = player;
 		}else{
-			target = SearchEntity.inLineOfSight(blocks, player);
+			target = (Player) SearchEntity.inLineOfSight(blocks, player, EntityType.PLAYER);
 		}
 		
 		if(target == null){
