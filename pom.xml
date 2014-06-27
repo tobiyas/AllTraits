@@ -41,6 +41,7 @@
 		<module>MovementSpeedTrait</module>
 		<module>NightDamageTrait</module>
 		<module>PermanentPotionTrait</module>
+		<module>PermissionTrait</module>
 		<module>PoisonedWeaponTrait</module>
 		<module>RegenerationTrait</module>
 		<module>RegularDamageTrait</module>

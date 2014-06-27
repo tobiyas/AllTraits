@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -33,6 +32,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.MessageScheduleApi;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -43,6 +43,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ColdFeetTrait extends AbstractMagicSpellTrait {
@@ -86,7 +87,7 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 			@TraitConfigurationField(fieldName = "turnBack", classToExpect = Boolean.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		duration = (Integer) configMap.get("duration");
@@ -210,7 +211,7 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 	}
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		final String playerName = player.getName();
 		
 		if(coldFeetList.contains(playerName)){

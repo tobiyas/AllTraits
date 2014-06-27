@@ -17,16 +17,15 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.events.holderevent.classevent.AfterClassChangedEvent;
 import de.tobiyas.racesandclasses.eventprocessing.events.holderevent.raceevent.AfterRaceChangedEvent;
@@ -37,6 +36,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class MovementSpeedTrait extends TickEverySecondsTrait {
@@ -88,15 +88,15 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 		
 		if(event instanceof AfterClassChangedEvent){
 			AfterClassChangedEvent classEvent = (AfterClassChangedEvent) event;
-			if(holder == classEvent.getOldClass()){
-				setNewSpeed(classEvent.getPlayer(), DEFAULT_SPEED);
+			if(holders.contains(classEvent.getOldClass())){
+				setNewSpeed(RaCPlayerManager.get().getPlayer(classEvent.getPlayer()), DEFAULT_SPEED);
 			}
 		}
 
 		if(event instanceof AfterRaceChangedEvent){
 			AfterRaceChangedEvent classEvent = (AfterRaceChangedEvent) event;
-			if(holder == classEvent.getOldRace()){
-				setNewSpeed(classEvent.getPlayer(), DEFAULT_SPEED);
+			if(holders.contains(classEvent.getOldRace())){
+				setNewSpeed(RaCPlayerManager.get().getPlayer(classEvent.getPlayer()), DEFAULT_SPEED);
 			}
 		}
 		
@@ -108,7 +108,7 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 			@TraitConfigurationField( fieldName = "value", classToExpect = Double.class)
 		}, removedFields = {@RemoveSuperConfigField(name = "seconds")})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		configMap.put("seconds", 5);
 		super.setConfiguration(configMap);
 		
@@ -124,7 +124,7 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 	
 	
 	@Override
-	protected boolean tickDoneForPlayer(final Player player) {
+	protected boolean tickDoneForPlayer(final RaCPlayer player) {
 		boolean isOnDisabledWorld = checkDisabledPerWorld(player.getWorld());
 		
 		final float convertedValue = isOnDisabledWorld ? DEFAULT_SPEED : (float) value;
@@ -133,18 +133,19 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 	}
 	
 	@Override
-	protected void restrictionsFailed(Player player) {
+	protected void restrictionsFailed(RaCPlayer player) {
 		setNewSpeed(player, DEFAULT_SPEED);
 	}
 	
-	private void setNewSpeed(final Player player, final float convertedValue){
+	private void setNewSpeed(final RaCPlayer player, final float convertedValue){
 		if(convertedValue < 0 || convertedValue > 1) return;
 		
 		//Schedule this to the next tics since it will be overwritten...
 		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask((JavaPlugin)plugin, new Runnable() {
 			@Override
 			public void run() {
-				player.setWalkSpeed(convertedValue);
+				if(!player.isOnline()) return;
+				player.getPlayer().setWalkSpeed(convertedValue);
 			}
 		}, 2);
 	}

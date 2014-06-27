@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -28,6 +27,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.MessageScheduleApi;
 import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
@@ -38,6 +38,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class TrollbloodTrait extends AbstractBasicTrait {
@@ -71,7 +72,7 @@ public class TrollbloodTrait extends AbstractBasicTrait {
 			@TraitConfigurationField(fieldName = "duration", classToExpect = Integer.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		duration = (Integer) configMap.get("duration");
 	}
@@ -118,9 +119,9 @@ public class TrollbloodTrait extends AbstractBasicTrait {
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		if(!(wrapper.getPlayerAction() == PlayerAction.HIT_BLOCK || wrapper.getPlayerAction() == PlayerAction.HIT_AIR)) return false;
 		
-		Player player = wrapper.getPlayer();
-		if(player.getItemInHand().getType() != itemIDInHand) return false;
-		if(!plugin.getPoisonManager().isPoisoned(player)) return false;
+		RaCPlayer player = wrapper.getPlayer();
+		if(player.getPlayer().getItemInHand().getType() != itemIDInHand) return false;
+		if(!plugin.getPoisonManager().isPoisoned(player.getPlayer())) return false;
 		return true;
 	}
 

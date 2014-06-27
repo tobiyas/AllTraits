@@ -23,10 +23,10 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
@@ -76,9 +76,9 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		@SuppressWarnings("deprecation")
-		Block toStrikeOn = player.getTargetBlock(null, 100);
+		Block toStrikeOn = player.getPlayer().getTargetBlock(null, 100);
 		if(toStrikeOn == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);
 			result.setTriggered(false);

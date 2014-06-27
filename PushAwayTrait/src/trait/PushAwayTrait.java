@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
@@ -27,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -36,6 +36,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class PushAwayTrait extends AbstractMagicSpellTrait  {
@@ -89,15 +90,15 @@ public class PushAwayTrait extends AbstractMagicSpellTrait  {
 			@TraitConfigurationField( fieldName = "blocks", classToExpect = Integer.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		this.blocks = (Integer) configMap.get("blocks");
 	}
 	
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
-		LivingEntity pushbackEntity = SearchEntity.inLineOfSight(30, player);		
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
+		LivingEntity pushbackEntity = SearchEntity.inLineOfSight(30, player.getPlayer());		
 		if(pushbackEntity != null){
 			String targetName = pushbackEntity.getType() == EntityType.PLAYER 
 					? ((Player)pushbackEntity).getName() 

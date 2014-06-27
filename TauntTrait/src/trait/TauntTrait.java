@@ -49,6 +49,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class TauntTrait extends AbstractBasicTrait implements Listener {
@@ -92,7 +93,7 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 			@TraitConfigurationField(fieldName = "range", classToExpect = Integer.class)			
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		seconds = (Integer) configMap.get("seconds");

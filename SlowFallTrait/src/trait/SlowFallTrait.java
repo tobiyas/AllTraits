@@ -24,7 +24,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 
-import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -32,7 +32,6 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractContinousCostMagicSpellTrait;
-import de.tobiyas.racesandclasses.translation.languages.Keys;
 
 public class SlowFallTrait extends AbstractContinousCostMagicSpellTrait {
 	
@@ -84,7 +83,7 @@ public class SlowFallTrait extends AbstractContinousCostMagicSpellTrait {
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		if(wrapper.getPlayerAction() == PlayerAction.PLAYER_MOVED){
-			Player player = wrapper.getPlayer();
+			RaCPlayer player = wrapper.getPlayer();
 			return activePlayersSchedulerMap.containsKey(player.getName());
 		}
 		
@@ -119,17 +118,17 @@ public class SlowFallTrait extends AbstractContinousCostMagicSpellTrait {
 	
 
 	@Override
-	protected boolean activateIntern(Player player) {
+	protected boolean activateIntern(RaCPlayer player) {
 		//LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
 		return true;
 	}
 
 	
-	protected boolean deactivateIntern(Player player){
+	protected boolean deactivateIntern(RaCPlayer player){
 		//LanguageAPI.sendTranslatedMessage(player,  Keys.trait_faded,
 		//		"name", getDisplayName());
 		
-		player.setFallDistance(0);
+		player.getPlayer().setFallDistance(0);
 		return true;
 	}
 	
@@ -146,7 +145,7 @@ public class SlowFallTrait extends AbstractContinousCostMagicSpellTrait {
 
 
 	@Override
-	protected boolean tickInternal(Player player) {
+	protected boolean tickInternal(RaCPlayer player) {
 		return true;
 	}
 }

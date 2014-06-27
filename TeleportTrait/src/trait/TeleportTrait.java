@@ -21,10 +21,10 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
@@ -74,8 +74,8 @@ public class TeleportTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
-		Block toTeleportTo = player.getTargetBlock(null, 100);
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
+		Block toTeleportTo = player.getPlayer().getTargetBlock(null, 100);
 		
 		if(toTeleportTo == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);
@@ -94,7 +94,7 @@ public class TeleportTrait extends AbstractMagicSpellTrait  {
 			}			
 		}
 		
-		player.teleport(toTeleportTo.getRelative(BlockFace.UP).getLocation());
+		player.getPlayer().teleport(toTeleportTo.getRelative(BlockFace.UP).getLocation());
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_teleport_success);
 		player.sendMessage(ChatColor.GREEN + "[RaC] Teleported.");
 		

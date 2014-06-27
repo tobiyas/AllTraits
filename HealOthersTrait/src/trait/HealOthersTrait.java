@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
@@ -35,6 +34,7 @@ import org.bukkit.inventory.ItemStack;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.TraitEventManager;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
@@ -49,6 +49,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 
@@ -90,7 +91,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 		@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		value = (Double) configMap.get("value");
 	}
@@ -145,7 +146,8 @@ public class HealOthersTrait extends AbstractBasicTrait {
 		
 		EntityHealEvent entityHealEvent = new EntityHealOtherEntityEvent(player, amount, RegainReason.MAGIC, player);
 		TraitEventManager.fireEvent(entityHealEvent);
-
+		if(entityHealEvent.isCancelled()) return false;
+		
 		amount = CompatibilityModifier.EntityHeal.safeGetAmount(entityHealEvent);
 		
 		//Never overheal! this gives an Exception!
@@ -193,6 +195,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 		Player targetPlayer = (Player) target;
 		EntityHealEvent entityHealEvent = new EntityHealOtherEntityEvent(targetPlayer, value, RegainReason.MAGIC, playerInteracting);
 		TraitEventManager.fireEvent(entityHealEvent);
+		if(entityHealEvent.isCancelled()) return false;
 		
 		amount = CompatibilityModifier.EntityHeal.safeGetAmount(entityHealEvent);
 		if(currentHealth + amount > maxHealth) amount = maxHealth - currentHealth;
@@ -245,8 +248,8 @@ public class HealOthersTrait extends AbstractBasicTrait {
 	
 	@Override
 	public boolean triggerButHasUplink(EventWrapper wrapper){
-		Player player = wrapper.getPlayer();
-		if(player.getItemInHand().getType() == itemIDInHand){
+		RaCPlayer player = wrapper.getPlayer();
+		if(player.getPlayer().getItemInHand().getType() == itemIDInHand){
 			return false;
 		}
 		
@@ -256,7 +259,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		PlayerAction action = wrapper.getPlayerAction();
-		Player player = wrapper.getPlayer();
+		RaCPlayer player = wrapper.getPlayer();
 		
 		if(action == PlayerAction.INTERACT_ENTITY
 			|| action == PlayerAction.INTERACT_BLOCK
@@ -270,7 +273,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 			if(action == PlayerAction.INTERACT_ENTITY){
 				Entity target = wrapper.getEntityTarget();
 				if(target != null && target instanceof Player){
-					if(player.getItemInHand().getType() != itemIDInHand) return false;
+					if(player.getPlayer().getItemInHand().getType() != itemIDInHand) return false;
 					return true;
 				}
 				
@@ -278,7 +281,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 			}
 			
 			if(action == PlayerAction.INTERACT_AIR || action == PlayerAction.INTERACT_BLOCK){
-				if(player.getItemInHand().getType() != itemIDInHand) return false;
+				if(player.getPlayer().getItemInHand().getType() != itemIDInHand) return false;
 				return true;
 			}
 		}

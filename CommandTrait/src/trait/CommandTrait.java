@@ -17,14 +17,13 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -32,6 +31,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class CommandTrait extends AbstractMagicSpellTrait  {
@@ -82,7 +82,7 @@ public class CommandTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		
 		final String startCommandToEdit = startCommmand.replaceAll("@p", player.getName());
 		final String endCommandToEdit = endCommand.replaceAll("@p", player.getName());
@@ -108,7 +108,7 @@ public class CommandTrait extends AbstractMagicSpellTrait  {
 			@TraitConfigurationField(fieldName = "time", classToExpect = Integer.class)
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap)
+	public void setConfiguration(TraitConfiguration configMap)
 			throws TraitConfigurationFailedException {
 		
 		if(configMap.containsKey("start")){

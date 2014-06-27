@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,6 +33,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ToolTrait extends AbstractPassiveTrait{
@@ -69,7 +69,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 			@TraitConfigurationField(fieldName = "allowNonForbidden", classToExpect = Boolean.class, optional = true),			
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		forbidden.clear();
@@ -106,7 +106,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 	public TraitResults trigger(EventWrapper eventWrapper) {   
 		ItemStack interactingWith = null;
 
-		if(eventWrapper.getPlayer() != null) interactingWith = eventWrapper.getPlayer().getItemInHand();
+		if(eventWrapper.getPlayer() != null) interactingWith = eventWrapper.getPlayer().getPlayer().getItemInHand();
 		if(interactingWith == null) return TraitResults.False();
 		
 		if(isOnForbidList(interactingWith)) {

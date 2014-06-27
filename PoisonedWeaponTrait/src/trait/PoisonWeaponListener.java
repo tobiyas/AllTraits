@@ -25,7 +25,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -39,6 +39,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.RacesAndClasses;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
+import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
 
 public class PoisonWeaponListener implements Listener{
 
@@ -163,10 +166,11 @@ public class PoisonWeaponListener implements Listener{
 		
 		if(!hasPoison) return;
 		
-		OfflinePlayer player = Bukkit.getOfflinePlayer(event.getWhoClicked().getUniqueId());
-		if(trait.getTraitHolder().getHolderManager().getHolderOfPlayer(player.getUniqueId()) 
-				!= trait.getTraitHolder()){
-			event.setCancelled(true);
+		Player player = Bukkit.getPlayer(event.getWhoClicked().getUniqueId());
+		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
+		
+		if(!TraitHolderCombinder.checkContainer(racPlayer, trait)){
+			event.setCancelled(true);			
 		}
 	}
 	

@@ -17,14 +17,13 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 
 import de.tobiyas.racesandclasses.RacesAndClasses;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.events.mana.ManaRegenerationEvent;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
@@ -34,6 +33,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
@@ -61,7 +61,7 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class),
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap)
+	public void setConfiguration(TraitConfiguration configMap)
 			throws TraitConfigurationFailedException {
 
 		super.setConfiguration(configMap);		
@@ -106,14 +106,14 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {		
-		if(plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().isManaFull()){
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {		
+		if(player.getManaManager().isManaFull()){
 			LanguageAPI.sendTranslatedMessage(player, Keys.mana_already_full);
 			result.setTriggered(false);
 			return;
 		}
 		
-		ManaRegenerationEvent event = new ManaRegenerationEvent(player, value);
+		ManaRegenerationEvent event = new ManaRegenerationEvent(player.getPlayer(), value);
 		plugin.fireEventToBukkit(event);
 		
 		double newValue = event.getAmount();
@@ -125,7 +125,7 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 			return;
 		}
 		
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().fillMana(newValue);
+		player.getManaManager().fillMana(newValue);
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_consume_success,
 				"value", String.valueOf(newValue), "material", materialForCasting.name());

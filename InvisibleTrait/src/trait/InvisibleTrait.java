@@ -28,6 +28,7 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
@@ -99,7 +100,7 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 
 
 	@Override
-	protected boolean activateIntern(Player player) {	
+	protected boolean activateIntern(RaCPlayer player) {	
 		int time = everyXSeconds <= 0 ? durationInSeconds : everyXSeconds;
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_invisible_toggle, 
 				"duration", String.valueOf(time));
@@ -110,12 +111,12 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 	}
 	
 	
-	private void setInvisibleToEverything(Player player){
+	private void setInvisibleToEverything(RaCPlayer player){
 		for(Player otherPlayer : Bukkit.getOnlinePlayers()){
-			otherPlayer.hidePlayer(player);
+			otherPlayer.hidePlayer(player.getPlayer());
 		}
 		//Canceling targeting of nearby entities.
-		for(Entity entity : player.getNearbyEntities(100, 100, 100)){
+		for(Entity entity : player.getPlayer().getNearbyEntities(100, 100, 100)){
 			if(!(entity instanceof Creature)) continue;
 			Creature creature = (Creature) entity;
 			if(creature.getTarget() == player){
@@ -125,15 +126,15 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 	}
 	
 	
-	private void setVisibleAgain(Player player){
+	private void setVisibleAgain(RaCPlayer player){
 		for(Player otherPlayer : Bukkit.getOnlinePlayers()){
-			otherPlayer.showPlayer(player);
+			otherPlayer.showPlayer(player.getPlayer());
 		}
 	}
 	
 	
 	@Override
-	protected boolean deactivateIntern(Player player){
+	protected boolean deactivateIntern(RaCPlayer player){
 		setVisibleAgain(player);
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_faded, "name", getDisplayName());
 		return true;
@@ -142,7 +143,7 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 
 
 	@Override
-	protected boolean tickInternal(Player player) {
+	protected boolean tickInternal(RaCPlayer player) {
 		setInvisibleToEverything(player); //just to be sure...
 		return true;
 	}

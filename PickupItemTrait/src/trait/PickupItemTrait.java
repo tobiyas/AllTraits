@@ -18,18 +18,17 @@ package trait;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -38,6 +37,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class PickupItemTrait extends AbstractMagicSpellTrait  {
@@ -74,7 +74,7 @@ public class PickupItemTrait extends AbstractMagicSpellTrait  {
 			@TraitConfigurationField( fieldName = "blocks", classToExpect = Integer.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		this.blocks = (Integer) configMap.get("blocks");
@@ -98,9 +98,9 @@ public class PickupItemTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
-		List<Block> blocks = player.getLineOfSight(new HashSet<Byte>(), 30);
-		List<Entity> nearEntities = player.getNearbyEntities(30, 30, 30);
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
+		List<Block> blocks = player.getPlayer().getLineOfSight(new HashSet<Byte>(), 30);
+		List<Entity> nearEntities = player.getPlayer().getNearbyEntities(30, 30, 30);
 		
 		Item pickupItem = null;
 		for(Block block : blocks){
@@ -119,14 +119,14 @@ public class PickupItemTrait extends AbstractMagicSpellTrait  {
 		
 		if(pickupItem != null){
 			ItemStack item = pickupItem.getItemStack();
-			PlayerPickupItemEvent event = new PlayerPickupItemEvent(player, pickupItem, 10);
+			PlayerPickupItemEvent event = new PlayerPickupItemEvent(player.getPlayer(), pickupItem, 10);
 			plugin.fireEventToBukkit(event);
 			if(event.isCancelled()) {
 				result.setTriggered(false);
 				return;
 			}
 			
-			if(player.getInventory().addItem(item).isEmpty()){
+			if(player.getPlayer().getInventory().addItem(item).isEmpty()){
 				LanguageAPI.sendTranslatedMessage(player, Keys.trait_pickup_success);
 				pickupItem.remove();
 				result.setTriggered(true);

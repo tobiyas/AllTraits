@@ -17,14 +17,13 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
@@ -32,6 +31,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractContinousCostMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class FlyingTrait extends AbstractContinousCostMagicSpellTrait  {
@@ -70,7 +70,7 @@ public class FlyingTrait extends AbstractContinousCostMagicSpellTrait  {
 			@TraitConfigurationField(fieldName = "speed", classToExpect = Double.class, optional = true)
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap)
+	public void setConfiguration(TraitConfiguration configMap)
 			throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
@@ -99,13 +99,13 @@ public class FlyingTrait extends AbstractContinousCostMagicSpellTrait  {
 
 
 	@Override
-	protected boolean activateIntern(Player player) {
-		if(player.getGameMode() != GameMode.CREATIVE){
-			player.setAllowFlight(true);
+	protected boolean activateIntern(RaCPlayer player) {
+		if(player.getPlayer().getGameMode() != GameMode.CREATIVE){
+			player.getPlayer().setAllowFlight(true);
 		}
 		
-		player.setFlying(true);
-		player.setFlySpeed((float) flyspeed);
+		player.getPlayer().setFlying(true);
+		player.getPlayer().setFlySpeed((float) flyspeed);
 		
 		int time = everyXSeconds <= 0 ? durationInSeconds : everyXSeconds;
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_fly_toggle, 
@@ -115,19 +115,19 @@ public class FlyingTrait extends AbstractContinousCostMagicSpellTrait  {
 	}
 
 	@Override
-	protected boolean deactivateIntern(Player player) {
-		if(player.getGameMode() != GameMode.CREATIVE){
-			player.setFlying(false);
-			player.setAllowFlight(false);			
+	protected boolean deactivateIntern(RaCPlayer player) {
+		if(player.getPlayer().getGameMode() != GameMode.CREATIVE){
+			player.getPlayer().setFlying(false);
+			player.getPlayer().setAllowFlight(false);			
 		}
 		
-		player.setFlySpeed(0.1f);
-		player.setFallDistance(0);
+		player.getPlayer().setFlySpeed(0.1f);
+		player.getPlayer().setFallDistance(0);
 		return true;
 	}
 
 	@Override
-	protected boolean tickInternal(Player player) {
+	protected boolean tickInternal(RaCPlayer player) {
 		//nothing to tick.
 		return true;
 	}

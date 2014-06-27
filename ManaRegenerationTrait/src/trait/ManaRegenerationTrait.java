@@ -17,8 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,6 +24,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
+import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.AbstractTraitHolder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper.RegainResource;
 import de.tobiyas.racesandclasses.eventprocessing.events.mana.ManaRegenerationEvent;
@@ -36,6 +37,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ManaRegenerationTrait extends AbstractBasicTrait {
@@ -70,10 +72,11 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 				
 				@Override
 				public void run() {
-					for(UUID playerUUID : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-						Player player = Bukkit.getPlayer(playerUUID);
-						if(player != null && player.isOnline()){
-							Bukkit.getPluginManager().callEvent(new ManaRegenerationEvent(player.getPlayer(), value));
+					for(AbstractTraitHolder holder : ManaRegenerationTrait.this.getTraitHolders()){
+						for(RaCPlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+							if(player != null && player.isOnline()){
+								Bukkit.getPluginManager().callEvent(new ManaRegenerationEvent(player.getPlayer(), value));
+							}
 						}
 					}
 				}
@@ -112,8 +115,8 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 		Player player = manaRegEvent.getPlayer();
 		double amount = manaRegEvent.getAmount();
 		
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager()
-			.fillMana(amount);
+		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
+		racPlayer.getManaManager().fillMana(amount);
 		return TraitResults.True();
 	}
 	
@@ -122,7 +125,7 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 			@TraitConfigurationField(fieldName = "time", classToExpect = Integer.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		this.value = (Double) configMap.get("value");
@@ -143,9 +146,8 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 		RegainResource resource = wrapper.getRegainResource();
 		if(resource != RegainResource.MANA) return false;
 		
-		Player player = wrapper.getPlayer();
+		RaCPlayer player = wrapper.getPlayer();
 		return player != null && player.isOnline() &&
-				!plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId())
-					.getManaManager().isManaFull();
+				!player.getManaManager().isManaFull();
 	}
 }

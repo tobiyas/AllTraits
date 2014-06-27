@@ -17,14 +17,13 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.events.mana.ManaRegenerationEvent;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
@@ -35,6 +34,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class LifeTapTrait extends AbstractMagicSpellTrait  {
@@ -57,7 +57,7 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class),
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap)
+	public void setConfiguration(TraitConfiguration configMap)
 			throws TraitConfigurationFailedException {
 
 		super.setConfiguration(configMap);
@@ -96,14 +96,14 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {		
-		if(plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().isManaFull()){
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {		
+		if(player.getManaManager().isManaFull()){
 			LanguageAPI.sendTranslatedMessage(player, Keys.mana_already_full);
 			result.setTriggered(false);
 			return;
 		}
 		
-		ManaRegenerationEvent event = new ManaRegenerationEvent(player, value);
+		ManaRegenerationEvent event = new ManaRegenerationEvent(player.getPlayer(), value);
 		plugin.fireEventToBukkit(event);
 		
 		double newValue = event.getAmount();
@@ -114,7 +114,7 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 			return;
 		}
 		
-		EntityDamageEvent damageEvent = CompatibilityModifier.EntityDamage.safeCreateEvent(player, DamageCause.MAGIC, cost);
+		EntityDamageEvent damageEvent = CompatibilityModifier.EntityDamage.safeCreateEvent(player.getPlayer(), DamageCause.MAGIC, cost);
 		plugin.fireEventToBukkit(damageEvent);
 		
 		double newDamage = CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent);
@@ -122,14 +122,14 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 			newDamage = 0;
 		}
 		
-		if(CompatibilityModifier.BukkitPlayer.safeGetHealth(player) <= newDamage){
+		if(CompatibilityModifier.BukkitPlayer.safeGetHealth(player.getPlayer()) <= newDamage){
 			LanguageAPI.sendTranslatedMessage(player, Keys.you_would_kill_yourself);
 			result.setTriggered(false);
 			return;
 		}
 		
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().fillMana(newValue);
-		CompatibilityModifier.BukkitPlayer.safeDamage(newDamage, player);
+		player.getManaManager().fillMana(newValue);
+		CompatibilityModifier.BukkitPlayer.safeDamage(newDamage, player.getPlayer());
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_lifetap_success, 
 				"value", String.valueOf(newValue), 

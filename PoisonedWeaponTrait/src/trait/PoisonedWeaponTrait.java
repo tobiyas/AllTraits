@@ -19,7 +19,6 @@ import java.security.SecureRandom;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.ChatColor;
@@ -34,7 +33,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
-import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
@@ -45,6 +44,8 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class PoisonedWeaponTrait extends AbstractBasicTrait{
@@ -93,7 +94,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 			@TraitConfigurationField(fieldName = "poisonMaterial", classToExpect = Material.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 
 		super.setConfiguration(configMap);
 		
@@ -113,41 +114,43 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	
 	
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
+	public TraitResults trigger(EventWrapper eventWrapper) {   
+		Event event = eventWrapper.getEvent();
 		if(!(event instanceof EntityDamageByEntityEvent)) return TraitResults.False();
 		
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 		if(!(Eevent.getDamager() instanceof Player)) return TraitResults.False();
+		
 		Player causer = (Player) Eevent.getDamager();
- 		
-		if(TraitHolderCombinder.checkContainer(causer.getUniqueId(), this)){
-			if(!checkItemIsPoisoned(causer.getItemInHand())) return TraitResults.False();
+		if(!checkItemIsPoisoned(causer.getItemInHand())) return TraitResults.False();
+		
+		LivingEntity target = (LivingEntity) Eevent.getEntity();
+		double randValue = rand.nextDouble();
+		if(chance > randValue){
+			if(EnemyChecker.areAllies(causer, target)) return TraitResults.False();
 			
-			LivingEntity target = (LivingEntity) Eevent.getEntity();
-			double randValue = rand.nextDouble();
-			if(chance > randValue){
-				int time = (int) seconds * 20;
-				int amplifier = (int) totalDamage;
-				
-				PotionEffect effect = new PotionEffect(PotionEffectType.POISON, time, amplifier);
-				target.addPotionEffect(effect, true);
-				
-				//since addPotionEffect returnValue is uselesse, we use our own detection.
-				String targetName = target instanceof Player ? ((Player) target).getName() : target.getType().name();
-				if(!target.hasPotionEffect(PotionEffectType.POISON)){
-					LanguageAPI.sendTranslatedMessage(causer, Keys.trait_poison_imun, "target", targetName);
-					return TraitResults.False();
-				}
-				
-				reducePoisonOnWeapon(causer.getItemInHand());
-				LanguageAPI.sendTranslatedMessage(causer, Keys.trait_poison_success, "target", targetName);
-				
-				if(target instanceof Player){
-					LanguageAPI.sendTranslatedMessage((Player)target, Keys.trait_poison_notify_other,
-							"player", causer.getName());
-				}
+			int time = (int) seconds * 20;
+			int amplifier = (int) totalDamage;
+			
+			PotionEffect effect = new PotionEffect(PotionEffectType.POISON, time, amplifier);
+			target.addPotionEffect(effect, true);
+			
+			//since addPotionEffect returnValue is uselesse, we use our own detection.
+			String targetName = target instanceof Player ? ((Player) target).getName() : target.getType().name();
+			if(!target.hasPotionEffect(PotionEffectType.POISON)){
+				LanguageAPI.sendTranslatedMessage(causer, Keys.trait_poison_imun, "target", targetName);
+				return TraitResults.False();
+			}
+			
+			reducePoisonOnWeapon(causer.getItemInHand());
+			LanguageAPI.sendTranslatedMessage(causer, Keys.trait_poison_success, "target", targetName);
+			
+			if(target instanceof Player){
+				LanguageAPI.sendTranslatedMessage((Player)target, Keys.trait_poison_notify_other,
+						"player", causer.getName());
 			}
 		}
+		
 		return TraitResults.False();
 	}
 	
@@ -227,9 +230,9 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
 		
-		Player player = wrapper.getPlayer();
+		RaCPlayer player = wrapper.getPlayer();
  		
-		if(!checkItemIsPoisoned(player.getItemInHand())) return false;
+		if(!checkItemIsPoisoned(player.getPlayer().getItemInHand())) return false;
 		return true;
 	}
 	

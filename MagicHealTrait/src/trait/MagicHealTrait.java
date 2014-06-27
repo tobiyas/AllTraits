@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
@@ -27,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.events.entitydamage.EntityHealOtherEntityEvent;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
@@ -38,6 +38,7 @@ import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpell
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 
@@ -80,7 +81,7 @@ public class MagicHealTrait extends AbstractMagicSpellTrait {
 		@TraitConfigurationField(fieldName = "blocks", classToExpect = Integer.class, optional = true)
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		value = (Double) configMap.get("value");
@@ -107,12 +108,12 @@ public class MagicHealTrait extends AbstractMagicSpellTrait {
 	}
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		Player target = null;
 		if(player.isSneaking()){
-			target = player;
+			target = player.getPlayer();
 		}else{
-			target = (Player) SearchEntity.inLineOfSight(blocks, player, EntityType.PLAYER);
+			target = (Player) SearchEntity.inLineOfSight(blocks, player.getPlayer(), EntityType.PLAYER);
 		}
 		
 		if(target == null){
@@ -133,7 +134,7 @@ public class MagicHealTrait extends AbstractMagicSpellTrait {
 			return;
 		}
 		
-		EntityHealOtherEntityEvent event = new EntityHealOtherEntityEvent(target, value, RegainReason.MAGIC, player);
+		EntityHealOtherEntityEvent event = new EntityHealOtherEntityEvent(target, value, RegainReason.MAGIC, player.getPlayer());
 		plugin.fireEventToBukkit(event);
 		
 		if(event.isCancelled()) {

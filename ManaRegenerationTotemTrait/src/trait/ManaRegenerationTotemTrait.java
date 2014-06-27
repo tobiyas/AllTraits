@@ -17,17 +17,20 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.AbstractTotemTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ManaRegenerationTotemTrait extends AbstractTotemTrait {
@@ -48,7 +51,7 @@ public class ManaRegenerationTotemTrait extends AbstractTotemTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class, optional = false)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		if(configMap.containsKey("value")){
@@ -76,16 +79,22 @@ public class ManaRegenerationTotemTrait extends AbstractTotemTrait {
 
 
 	@Override
-	protected void tickOn(TotemInfos infos, Player player) {
-		plugin.getPlayerManager().getSpellManagerOfPlayer(player.getUniqueId()).getManaManager().fillMana(value);
+	protected void tickOnPlayer(TotemInfos infos, Player player) {
+		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
+		racPlayer.getManaManager().fillMana(value);
 		player.getLocation().getWorld().playEffect(player.getLocation().add(0, 1, 0), Effect.ENDER_SIGNAL, 0);
 	}
 
 
 	@Override
 	protected String getPrettyConfigIntern() {
-		return "Heals " + value + " every " + tickEvery / 20;
+		return "Regenerates " + value + " Mana every " + tickEvery / 20;
 	}
 
+
+	@Override
+	protected void tickOnNonPlayer(TotemInfos infos, LivingEntity entity) {
+		//Not needed.
+	}
 
 }

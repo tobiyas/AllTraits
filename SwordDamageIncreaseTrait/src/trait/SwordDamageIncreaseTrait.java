@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,7 +25,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
-import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -37,6 +36,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
@@ -62,7 +62,7 @@ public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		operation = (String) configMap.get("operation");
@@ -78,16 +78,13 @@ public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
 		if(!(Eevent.getDamager() instanceof Player)) return TraitResults.False();
 		Player causer = (Player) Eevent.getDamager();
  		
-		if(TraitHolderCombinder.checkContainer(causer.getUniqueId(), this)){
-			if(!checkItemIsSword(causer.getItemInHand())) return TraitResults.False();
-			
-			double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldValue);
-			
-			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
-			return TraitResults.True();
-		}
-		return TraitResults.False();
+		if(!checkItemIsSword(causer.getItemInHand())) return TraitResults.False();
+		
+		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
+		double newValue = getNewValue(oldValue);
+		
+		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
+		return TraitResults.True();
 	}
 	
 	private boolean checkItemIsSword(ItemStack stack){
@@ -135,8 +132,8 @@ public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
 		
-		Player causer = wrapper.getPlayer(); 		
-		if(!checkItemIsSword(causer.getItemInHand())) return false;
+		RaCPlayer causer = wrapper.getPlayer(); 		
+		if(!checkItemIsSword(causer.getPlayer().getItemInHand())) return false;
 		return true;
 	}
 

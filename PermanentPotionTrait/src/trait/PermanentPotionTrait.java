@@ -17,21 +17,21 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.AbstractTraitHolder;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.RemoveSuperConfigField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 import de.tobiyas.racesandclasses.vollotile.Vollotile;
 
@@ -68,7 +68,7 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 			@RemoveSuperConfigField(name = "seconds")
 	})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		//Put the overriding stuff in it.
 		configMap.put("seconds", (Integer)5);
 		super.setConfiguration(configMap);
@@ -103,9 +103,9 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 	int particleTaskID = -1;
 
 	@Override
-	protected boolean tickDoneForPlayer(Player player) {
+	protected boolean tickDoneForPlayer(RaCPlayer player) {
 		boolean replace = true;
-		for( PotionEffect effect : player.getActivePotionEffects()){
+		for(PotionEffect effect : player.getPlayer().getActivePotionEffects()){
 			if(effect.getType() == type && effect.getDuration() > 20 * 15){
 				replace = false;
 				break;
@@ -114,10 +114,10 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 		
 		if(replace){
 			PotionEffect newPotionEffect = new PotionEffect(type, 20 * 15, amplifier);				
-			player.addPotionEffect(newPotionEffect, true);
+			player.getPlayer().addPotionEffect(newPotionEffect, true);
 			
 			if(removeParticles){
-				Vollotile.get().removeParticleEffect(player);
+				Vollotile.get().removeParticleEffect(player.getPlayer());
 			}
 		}
 		
@@ -126,10 +126,11 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 				
 				@Override
 				public void run() {
-					for(UUID playerUUID : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-						Player player = Bukkit.getPlayer(playerUUID);
-						if(player != null && player.isOnline()){
-							Vollotile.get().removeParticleEffect(player.getPlayer());
+					for(AbstractTraitHolder holder : PermanentPotionTrait.this.getTraitHolders()){
+						for(RaCPlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+							if(player != null && player.isOnline()){
+								Vollotile.get().removeParticleEffect(player.getPlayer());
+							}
 						}
 					}
 					

@@ -18,7 +18,6 @@ package trait;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -35,6 +34,8 @@ import de.tobiyas.racesandclasses.APIs.CooldownApi;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.MessageScheduleApi;
 import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -46,6 +47,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class DwarfSkinTrait extends AbstractPassiveTrait {
@@ -89,7 +91,7 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		operation = (String) configMap.get("operation");
 		value = (Double) configMap.get("value");
@@ -104,10 +106,12 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 		Entity entity = Eevent.getEntity();
 		
 		if(entity.getType() != EntityType.PLAYER) return TraitResults.False();
-		final Player player = (Player) entity;
 		
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
-		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId());
+		final Player player = (Player) entity;
+		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
+		
+		double maxHealth = racPlayer.getMaxHealth();
+		double currentHealth =  racPlayer.getHealth();
 		double healthPercent = 100 * currentHealth / maxHealth;
 		if(healthPercent > activationLimit) return TraitResults.False();
 		
@@ -172,10 +176,11 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		if(wrapper.getPlayerAction() != PlayerAction.TAKE_DAMAGE) return false;
-		Player player = wrapper.getPlayer();
 		
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getUniqueId());
-		double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getUniqueId());
+		RaCPlayer player = wrapper.getPlayer();
+		
+		double maxHealth = player.getMaxHealth();
+		double currentHealth =  player.getHealth();
 		double healthPercent = 100 * currentHealth / maxHealth;
 		if(healthPercent > activationLimit) return false;
 		

@@ -20,11 +20,11 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
@@ -74,7 +74,7 @@ public class FireballTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		Vector viewDirection = player.getLocation().getDirection();
 		if(viewDirection == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);
@@ -82,7 +82,7 @@ public class FireballTrait extends AbstractMagicSpellTrait  {
 			return;
 		}
 		
-		Fireball fireball = player.launchProjectile(Fireball.class);
+		Fireball fireball = player.getPlayer().launchProjectile(Fireball.class);
 		fireball.setVelocity(viewDirection);
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.launched_something, "name", "Fireball");

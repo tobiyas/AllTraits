@@ -17,19 +17,19 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class NightDamageTrait extends TickEverySecondsTrait {
@@ -57,7 +57,7 @@ public class NightDamageTrait extends TickEverySecondsTrait {
 			@TraitConfigurationField(fieldName = "standing", classToExpect = Boolean.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		damage = (Double) configMap.get("damage");
@@ -85,7 +85,7 @@ public class NightDamageTrait extends TickEverySecondsTrait {
 		if(standing) return true;
 		
 		//check if standing in sun.
-		Player player = wrapper.getPlayer();
+		RaCPlayer player = wrapper.getPlayer();
 		int playerYLocation = player.getLocation().getBlockY();
 		int highestLocation = player.getWorld().getHighestBlockYAt(player.getLocation());
 		if(highestLocation < playerYLocation) return false;
@@ -94,15 +94,15 @@ public class NightDamageTrait extends TickEverySecondsTrait {
 	}
 
 	@Override
-	protected boolean tickDoneForPlayer(Player player) {
-		EntityDamageEvent damageEvent = CompatibilityModifier.EntityDamage.safeCreateEvent(player, DamageCause.FIRE, damage);
+	protected boolean tickDoneForPlayer(RaCPlayer player) {
+		EntityDamageEvent damageEvent = CompatibilityModifier.EntityDamage.safeCreateEvent(player.getPlayer(), DamageCause.FIRE, damage);
 		plugin.fireEventToBukkit(damageEvent);
 		
 		if(!damageEvent.isCancelled()){
 			return false;
 		}
 		
-		player.damage(CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent));
+		player.getPlayer().damage(CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent));
 		return true;
 	}
 
