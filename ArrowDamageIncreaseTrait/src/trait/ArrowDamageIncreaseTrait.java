@@ -89,7 +89,7 @@ public class ArrowDamageIncreaseTrait extends AbstractPassiveTrait {
 		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(playerShooter);
 		if(TraitHolderCombinder.checkContainer(racPlayer, this)){
 			double oldDamage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldDamage);
+			double newValue = getNewValue(racPlayer, oldDamage);
 			
 			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 			

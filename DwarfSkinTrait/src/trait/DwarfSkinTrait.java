@@ -136,7 +136,7 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 		
 		if(currentlyActive.contains(player.getName())){
 			double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldValue);
+			double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
 			
 			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 			return TraitResults.True();

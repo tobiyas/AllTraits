@@ -99,7 +99,7 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 			
 			double oldDamage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldDamage);
+			double newValue = getNewValue(eventWrapper.getPlayer(), oldDamage);
 			
 			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 			return TraitResults.True();

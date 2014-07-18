@@ -103,7 +103,8 @@ public class LifeTapTrait extends AbstractMagicSpellTrait  {
 			return;
 		}
 		
-		ManaRegenerationEvent event = new ManaRegenerationEvent(player.getPlayer(), value);
+		double modValue = modifyToPlayer(player, value);
+		ManaRegenerationEvent event = new ManaRegenerationEvent(player.getPlayer(), modValue);
 		plugin.fireEventToBukkit(event);
 		
 		double newValue = event.getAmount();

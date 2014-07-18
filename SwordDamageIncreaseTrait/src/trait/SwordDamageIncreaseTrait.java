@@ -81,7 +81,7 @@ public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
 		if(!checkItemIsSword(causer.getItemInHand())) return TraitResults.False();
 		
 		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-		double newValue = getNewValue(oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 		return TraitResults.True();

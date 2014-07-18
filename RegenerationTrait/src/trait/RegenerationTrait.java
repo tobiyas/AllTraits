@@ -70,7 +70,7 @@ public class RegenerationTrait extends AbstractPassiveTrait {
 		EntityRegainHealthEvent Eevent = (EntityRegainHealthEvent) event;
 		double oldValue = CompatibilityModifier.EntityRegainHealth
 				.safeGetAmount(Eevent);
-		double newValue = getNewValue(oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
 
 		CompatibilityModifier.EntityRegainHealth.safeSetAmount(Eevent, newValue);
 

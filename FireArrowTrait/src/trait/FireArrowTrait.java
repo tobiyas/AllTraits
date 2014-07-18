@@ -23,11 +23,13 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.playermanagement.health.damagetickers.DamageTicker;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -89,7 +91,7 @@ public class FireArrowTrait extends AbstractArrow {
 		
 		if(EnemyChecker.areAllies(event.getDamager(), hitTarget)) return false;
 		
-		double damagePerTick = totalDamage / duration;
+		double damagePerTick = modifyToPlayer(RaCPlayerManager.get().getPlayer((Player) event.getDamager()) ,totalDamage) / duration;
 		DamageTicker ticker = new DamageTicker((LivingEntity) hitTarget, duration, damagePerTick, DamageCause.FIRE_TICK, event.getDamager());
 		ticker.playEffectOnDmg(Effect.MOBSPAWNER_FLAMES, 4);
 		hitTarget.setFireTicks(duration * 20);

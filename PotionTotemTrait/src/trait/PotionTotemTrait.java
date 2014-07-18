@@ -98,7 +98,8 @@ public class PotionTotemTrait extends AbstractTotemTrait {
 	protected void tickOnPlayer(TotemInfos infos, Player player) {
 		if(effect == null) return; //no effect -> nothing to add.
 		
-		PotionEffect toApply = new PotionEffect(effect, 2 * 20, amplifier);
+		int modAmp = modifyToPlayer(infos.getOwner(), amplifier);
+		PotionEffect toApply = new PotionEffect(effect, 2 * 20, modAmp);
 		player.addPotionEffect(toApply);
 	}
 
@@ -106,7 +107,8 @@ public class PotionTotemTrait extends AbstractTotemTrait {
 	protected void tickOnNonPlayer(TotemInfos infos, LivingEntity entity) {
 		if(effect == null) return; //no effect -> nothing to add.
 		
-		PotionEffect toApply = new PotionEffect(effect, 2 * 20, amplifier);
+		int modAmp = modifyToPlayer(infos.getOwner(), amplifier);
+		PotionEffect toApply = new PotionEffect(effect, 2 * 20, modAmp);
 		entity.addPotionEffect(toApply);
 	}
 

@@ -128,8 +128,10 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.SOUTH).getLocation(), 0);
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.WEST).getLocation(), 0);
 		
+		double modDamage = modifyToPlayer(player, damage);
+		
 		if(explode){
-			if(location.getWorld().createExplosion(location, (float) damage)){
+			if(location.getWorld().createExplosion(location, (float) modDamage)){
 				result.setTriggered(true);
 				return;
 			}
@@ -142,13 +144,13 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 			}
 			
 			EntityDamageByEntityEvent damageEvent = CompatibilityModifier.EntityDamageByEntity.
-					safeCreateEvent(player.getPlayer(), entity, DamageCause.ENTITY_EXPLOSION, damage);
+					safeCreateEvent(player.getPlayer(), entity, DamageCause.ENTITY_EXPLOSION, modDamage);
 			plugin.fireEventToBukkit(damageEvent);
 			
 			double newDamage = CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent);
 			if(!damageEvent.isCancelled() && newDamage > 0){
 				de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier.LivingEntity
-					.safeDamageEntity(entity, newDamage);
+					.safeDamageEntityByEntity(entity, player.getPlayer(), newDamage);
 			}
 		}	
 		

@@ -100,7 +100,9 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 		double percent = 100 * health / maxHealth;
 		
 		if(percent <= activationLimit){
-			EntityHealEvent ehEvent = new EntityHealEvent(player, value, RegainReason.MAGIC);
+			double modValue = modifyToPlayer(racPlayer, value);
+			
+			EntityHealEvent ehEvent = new EntityHealEvent(player, modValue, RegainReason.MAGIC);
 			TraitEventManager.fireEvent(ehEvent);
 			
 			double amount = CompatibilityModifier.EntityHeal.safeGetAmount(ehEvent);

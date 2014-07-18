@@ -193,7 +193,7 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 				Material blockMaterial = block.getType();
 				if(blockMaterial == Material.WATER || blockMaterial == Material.STATIONARY_WATER){
 					if(turnBack){
-						new ScheduleBackToWater(block, duration);
+						new ScheduleBackToWater(block, modifyToPlayer(eventWrapper.getPlayer(), duration));
 					}else{
 						block.setType(Material.ICE);
 					}

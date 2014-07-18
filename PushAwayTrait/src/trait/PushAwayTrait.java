@@ -36,15 +36,29 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
+import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.racesandclasses.vollotile.ParticleContainer;
+import de.tobiyas.racesandclasses.vollotile.Vollotile;
 
 public class PushAwayTrait extends AbstractMagicSpellTrait  {
 
 	/**
 	 * The Blocks the enemy is pushed away.
 	 */
-	private int blocks = 0;
+	private int blocks = 2;
+	
+	/**
+	 * If this is true, the Entity is thrown up instead.
+	 */
+	private boolean up = false;
+	
+	/**
+	 * The Particle effect display on the target.
+	 */
+	private ParticleContainer targetParticles = null;
+	
 	
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class})
 	@Override
@@ -87,19 +101,34 @@ public class PushAwayTrait extends AbstractMagicSpellTrait  {
 
 
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField( fieldName = "blocks", classToExpect = Integer.class)
+			@TraitConfigurationField( fieldName = "blocks", classToExpect = Integer.class, optional = true),
+			@TraitConfigurationField( fieldName = "up", classToExpect = Boolean.class, optional = true),
+			@TraitConfigurationField( fieldName = "targetParticles", classToExpect = String.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		this.blocks = (Integer) configMap.get("blocks");
+		if(configMap.containsKey("blocks")){
+			this.blocks = configMap.getAsInt("blocks");			
+		}
+		
+		if(configMap.containsKey("up")){
+			this.up = configMap.getAsBool("up");			
+		}
+		
+		if(configMap.containsKey("targetParticles")){
+			this.targetParticles = configMap.getAsParticleContainer("targetParticles");			
+		}
 	}
 	
 	@Override
 	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
-		LivingEntity pushbackEntity = SearchEntity.inLineOfSight(30, player.getPlayer());		
-		if(pushbackEntity != null){
+		LivingEntity pushbackEntity = SearchEntity.inLineOfSight(30, player.getPlayer());
+		
+		if(pushbackEntity != null
+			&& EnemyChecker.areEnemies(player.getPlayer(), pushbackEntity)){
+				
 			String targetName = pushbackEntity.getType() == EntityType.PLAYER 
 					? ((Player)pushbackEntity).getName() 
 					: pushbackEntity.getType().name();
@@ -107,12 +136,18 @@ public class PushAwayTrait extends AbstractMagicSpellTrait  {
 			LanguageAPI.sendTranslatedMessage(player, Keys.trait_pushaway_success, "target", targetName);
 			
 			Vector playerVector = player.getLocation().getDirection();
-			playerVector.setY(0);
+			if(up){
+				playerVector.copy(new Vector());
+				playerVector.setY(blocks);
+			}else{
+				playerVector.setY(0);
+				playerVector.multiply(this.blocks);
+				playerVector.setY(0.2);
+			}
 			
-			playerVector.multiply(this.blocks);
-			playerVector.setY(0.2);
-			
+			if(targetParticles != null) Vollotile.get().sendOwnParticleEffectToAll(targetParticles, pushbackEntity.getLocation());
 			pushbackEntity.setVelocity(playerVector);
+			
 			result.setTriggered(true);
 			return;
 		}

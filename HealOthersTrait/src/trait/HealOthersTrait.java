@@ -35,6 +35,7 @@ import org.bukkit.inventory.ItemStack;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.eventprocessing.TraitEventManager;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
@@ -68,7 +69,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEntityEvent.class, PlayerInteractEvent.class})
 	@Override
-	public void generalInit() {		
+	public void generalInit() {
 		TraitConfig config = plugin.getConfigManager().getTraitConfigManager().getConfigOfTrait(getName());
 		if(config != null){
 			itemIDInHand = Material.getMaterial((Integer) config.getValue("trait.iteminhand", Material.STRING.getId()));
@@ -141,7 +142,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 			return false;
 		}
 		
-		double amount = value;
+		double amount = modifyToPlayer(RaCPlayerManager.get().getPlayer(player), value);
 		if(currentHealth + amount > maxHealth) amount = maxHealth - currentHealth;
 		
 		EntityHealEvent entityHealEvent = new EntityHealOtherEntityEvent(player, amount, RegainReason.MAGIC, player);
@@ -189,7 +190,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 			return false;
 		}
 		
-		double amount = value;
+		double amount = modifyToPlayer(RaCPlayerManager.get().getPlayer(playerInteracting), value);
 		if(currentHealth + amount > maxHealth) amount = maxHealth - currentHealth;
 		
 		Player targetPlayer = (Player) target;

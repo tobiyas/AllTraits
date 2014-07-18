@@ -108,6 +108,8 @@ public class FlyingTrait extends AbstractContinousCostMagicSpellTrait  {
 		player.getPlayer().setFlySpeed((float) flyspeed);
 		
 		int time = everyXSeconds <= 0 ? durationInSeconds : everyXSeconds;
+		time = modifyToPlayer(player, time);
+		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_fly_toggle, 
 				"duration", String.valueOf(time));
 		

@@ -113,7 +113,8 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 		}
 		
 		if(replace){
-			PotionEffect newPotionEffect = new PotionEffect(type, 20 * 15, amplifier);				
+			int modAmp = modifyToPlayer(player, amplifier);
+			PotionEffect newPotionEffect = new PotionEffect(type, 20 * 15, modAmp);				
 			player.getPlayer().addPotionEffect(newPotionEffect, true);
 			
 			if(removeParticles){

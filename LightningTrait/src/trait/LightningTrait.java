@@ -28,14 +28,21 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class LightningTrait extends AbstractMagicSpellTrait  {
 
+	private double damage = 3;
+	
+	
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class})
 	@Override
 	public void generalInit() {
@@ -56,6 +63,20 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 	@TraitInfos(category="magic", traitName="LightningTrait", visible=true)
 	@Override
 	public void importTrait() {
+	}
+	
+	
+	@TraitConfigurationNeeded(fields = {
+			@TraitConfigurationField(fieldName = "damage", classToExpect = Double.class, optional = true)
+	})
+	@Override
+	public void setConfiguration(TraitConfiguration configMap)
+			throws TraitConfigurationFailedException {
+		super.setConfiguration(configMap);
+		
+		if(configMap.containsKey("damage")){
+			damage = configMap.getAsDouble("damage");
+		}
 	}
 
 	
@@ -91,6 +112,7 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 			toStrikeOn = entities.get(0).getLocation().getBlock();
 		}
 		
+		//TODO fetch damage event and do own.
 		toStrikeOn.getWorld().strikeLightning(toStrikeOn.getLocation());
 		result.setTriggered(true);
 		return;

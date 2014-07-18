@@ -25,34 +25,29 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.MessageScheduleApi;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class TauntTrait extends AbstractBasicTrait implements Listener {
+public class TauntTrait extends AbstractMagicSpellTrait implements Listener {
 
 	/**
 	 * The Map of the Taunted Entities.
@@ -70,10 +65,10 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 	private int range = 0;
 	
 	
-	@TraitEventsUsed(registerdClasses = {PlayerInteractEntityEvent.class, PlayerInteractEvent.class})
+	@TraitEventsUsed
 	@Override
 	public void generalInit() {
-		Bukkit.getPluginManager().registerEvents(this, (JavaPlugin) plugin);
+		Bukkit.getPluginManager().registerEvents(this, (Plugin) plugin);
 	}
 	
 	
@@ -89,61 +84,23 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 	}
 
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(fieldName = "seconds", classToExpect = Integer.class),
-			@TraitConfigurationField(fieldName = "range", classToExpect = Integer.class)			
+			@TraitConfigurationField(fieldName = "seconds", classToExpect = Integer.class, optional = true),
+			@TraitConfigurationField(fieldName = "range", classToExpect = Integer.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		seconds = (Integer) configMap.get("seconds");
-		range = (Integer) configMap.get("range");
+		if(configMap.containsKey("seconds")){
+			seconds = configMap.getAsInt("seconds");
+		}
+		
+		if(configMap.containsKey("range")){
+			range = configMap.getAsInt("range");
+		}
 	}
 
 	
-	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
-		Player player = null;
-		Creature target = null;
-		
-		if(event instanceof PlayerInteractEntityEvent){
-			PlayerInteractEntityEvent Eevent = (PlayerInteractEntityEvent) event;
-			target = (Creature) Eevent.getRightClicked();
-			player = Eevent.getPlayer();
-		}
-		
-		if(event instanceof PlayerInteractEvent){
-			PlayerInteractEvent Eevent = (PlayerInteractEvent) event;
-			player = Eevent.getPlayer();
-			if(Eevent.getAction() == Action.RIGHT_CLICK_AIR){
-				target = SearchEntity.inLineOfSight(range, player);
-			}
-		}
-		
-		
-		if(player == null || target == null) return TraitResults.False();
-		if(target instanceof Player) return TraitResults.False();
-		
-		String targetName = target.getType().name();
-		LanguageAPI.sendTranslatedMessage(player, Keys.trait_taunt_success, 
-				"target", targetName);
-		player.sendMessage(ChatColor.LIGHT_PURPLE + target.getType().name() + ChatColor.GREEN + " taunted.");
-		
-		target.setTarget(player);
-		
-		List<Entity> taunts = tauntMap.containsKey(player.getName()) 
-				? tauntMap.get(player.getName()) 
-				: new LinkedList<Entity>();
-		
-		taunts.add(target);
-		tauntMap.put(player.getName(), taunts);
-		
-		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), seconds, Keys.trait_taunt_fade,
-				"target", targetName);
-		
-		scheduleTauntRemove(player, target);
-		return TraitResults.True();
-	}
 	
 	/**
 	 * Removes the Dead Entities.
@@ -160,8 +117,11 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 		}
 	}
 	
-	private void scheduleTauntRemove(final Player player, final Creature target) {
-		Bukkit.getScheduler().scheduleSyncDelayedTask((JavaPlugin)plugin, new Runnable(){
+	
+	private void scheduleTauntRemove(final RaCPlayer player, final Creature target) {
+		int modDur = modifyToPlayer(player, seconds * 20);
+		
+		Bukkit.getScheduler().scheduleSyncDelayedTask((Plugin)plugin, new Runnable(){
 			@Override
 			public void run() {
 				List<Entity> taunts = tauntMap.get(player.getName());
@@ -169,9 +129,10 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 				
 				removeDead();
 			}
-		}, seconds * 20);
+		}, modDur);
 	}
 
+	
 	@EventHandler
 	public void OnTargetChange(EntityTargetEvent event){		
 		Entity target = event.getEntity();
@@ -208,21 +169,6 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
-		if(wrapper.getPlayerAction() == PlayerAction.INTERACT_ENTITY){
-			if(wrapper.getEntityTarget() instanceof Creature){
-				Creature target = (Creature) wrapper.getEntityTarget();
-				if(target.getType() == EntityType.PLAYER) return false;
-				
-				return true;
-			}
-		}
-
-		if(wrapper.getPlayerAction() == PlayerAction.INTERACT_AIR || wrapper.getPlayerAction() == PlayerAction.INTERACT_BLOCK){
-			return true;
-		}
-		
-		
-		
 		return false;
 	}
 
@@ -235,6 +181,42 @@ public class TauntTrait extends AbstractBasicTrait implements Listener {
 	@Override
 	public boolean notifyTriggeredUplinkTime(EventWrapper wrapper) {
 		return true;
+	}
+
+
+	@Override
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
+		Creature target = SearchEntity.inLineOfSight(range, player.getPlayer());
+		
+		if(target == null
+				||!player.isOnline()
+				||target instanceof Player
+				||!target.isValid()  ) {
+			
+			result.copyFrom(TraitResults.False());
+			return;
+		}
+		
+		String targetName = target.getType().name();
+		LanguageAPI.sendTranslatedMessage(player, Keys.trait_taunt_success, 
+				"target", targetName);
+		player.sendMessage(ChatColor.LIGHT_PURPLE + target.getType().name() + ChatColor.GREEN + " taunted.");
+		
+		target.setTarget(player.getPlayer());
+		
+		List<Entity> taunts = tauntMap.containsKey(player.getName()) 
+				? tauntMap.get(player.getName()) 
+				: new LinkedList<Entity>();
+		
+		taunts.add(target);
+		tauntMap.put(player.getName(), taunts);
+		
+		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), modifyToPlayer(player, seconds), Keys.trait_taunt_fade,
+				"target", targetName);
+		
+		scheduleTauntRemove(player, target);
+		result.copyFrom(TraitResults.True());
+		return;
 	}
 	
 }

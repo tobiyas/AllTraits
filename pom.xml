@@ -68,34 +68,49 @@
 		<module>LongArrowTrait</module>
 		<module>MultishotArrowTrait</module>
 		<module>PoisonArrowTrait</module>
+		<module>PotionArrowTrait</module>
+		<module>QuickArrowShotTrait</module>
 		<module>StunArrowTrait</module>
 		<module>TeleportArrowTrait</module>
 
 		<!-- activate -->
+		<module>AreaAirDropTrait</module>
+		<module>AreaDamageTrait</module>
 		<module>BackstabTrait</module>
 		<module>GrapplingHookTrait</module>
 		<module>HealOthersTrait</module>
 		<module>SprintTrait</module>
 		<module>TauntTrait</module>
+		<module>ThrowItemTrait</module>
 		<module>TrollBloodTrait</module>
 		
 		<!-- magic -->
+		<module>AbsorbDamageBuffTrait</module>
+		<module>AreaAirDropSpellTrait</module>
 		<module>ColdFeetTrait</module>
 		<module>CommandTrait</module>
 		<module>ExplosionTrait</module>
 		<module>FireballTrait</module>
+		<module>FirebreathTrait</module>
 		<module>FlyingTrait</module>
 		<module>InvisibleTrait</module>
 		<module>ItemForManaConsumeTrait</module>
 		<module>LightTrait</module>
 		<module>PickupItemTrait</module>
+		<module>PullToSelfTrait</module>
 		<module>PushAwayTrait</module>
 		<module>LifeTapTrait</module>
 		<module>LightningTrait</module>
+		<module>MagicSpellsSpellTrait</module>
+		<module>MagicDamageTrait</module>
 		<module>MagicHealTrait</module>
+		<module>MagicAreaHealTrait</module>
 		<module>SlowFallTrait</module>
+		<module>StunSpellTrait</module>
 		<module>TeleportTrait</module>
+		<module>ThrowItemsAroundSpellTrait</module>
 		<module>WallTrait</module>
+		<module>WeaponNextHitDamageIncreaseBuffTrait</module>
 		
 		<!-- Totems -->
 		<module>HealTotemTrait</module>

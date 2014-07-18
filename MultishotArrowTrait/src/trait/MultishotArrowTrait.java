@@ -29,6 +29,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
@@ -97,7 +98,8 @@ public class MultishotArrowTrait extends AbstractArrow {
 		final int angle = 10;
 		int currentAngle = angle;
 		
-		for(int i = 1; i < amountArrows; i++){
+		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows);
+		for(int i = 1; i < modAmount; i++){
 			currentAngle = ((i + 1) /2 ) * angle;
 			
 			if(useArrow && !removeArrow(shooter)) return true;
@@ -109,7 +111,7 @@ public class MultishotArrowTrait extends AbstractArrow {
 			
 			i++;
 			
-			if(i < amountArrows){
+			if(i < modAmount){
 				if(useArrow && !removeArrow(shooter)) return true;
 				newVelocity = calcNewVelocity(oldVelocity.clone(), -currentAngle);
 				Arrow leftArrow = shooter.launchProjectile(Arrow.class);

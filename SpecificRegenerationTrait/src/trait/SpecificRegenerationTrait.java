@@ -72,8 +72,9 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 								&& !checkRestrictions(wrapper) 
 								&& canBeTriggered(wrapper)){
 							
+							double modHeal = modifyToPlayer(player, heal);
 							EntityHealEvent regainHealthEvent = 
-									CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), heal, RegainReason.REGEN);
+									CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), modHeal, RegainReason.REGEN);
 							
 							Bukkit.getPluginManager().callEvent(regainHealthEvent);
 							if(!regainHealthEvent.isCancelled()){

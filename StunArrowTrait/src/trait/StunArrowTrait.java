@@ -30,6 +30,8 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.StunAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
@@ -122,7 +124,10 @@ public class StunArrowTrait extends AbstractArrow {
 			}
 		}
 		
-		boolean stunned = StunAPI.StunEntity.stunEntityForSeconds(shooter, hitTarget, duration);
+		RaCPlayer racshooter = RaCPlayerManager.get().getPlayer((Player) shooter);
+		int modDur = modifyToPlayer(racshooter, duration);
+		
+		boolean stunned = StunAPI.StunEntity.stunEntityForSeconds(shooter, hitTarget, modDur);
 		if(stunned){
 			if(shooter != null){
 				String enemy = hitTarget instanceof Player ? 
@@ -130,7 +135,7 @@ public class StunArrowTrait extends AbstractArrow {
 						hitTarget.getType().name();
 				
 				LanguageAPI.sendTranslatedMessage(shooter, Keys.trait_stun_arrow_success,
-						"duration", String.valueOf(duration), "target", enemy);
+						"duration", String.valueOf(modDur), "target", enemy);
 			}
 		}
 		

@@ -21,32 +21,27 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import org.bukkit.entity.Creature;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.AbstractActivatableTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class BackstabTrait extends AbstractBasicTrait implements Listener {
+public class BackstabTrait extends AbstractActivatableTrait implements Listener {
 
 	/**
 	 * the amount of blocks searched.
@@ -58,7 +53,7 @@ public class BackstabTrait extends AbstractBasicTrait implements Listener {
 	private int duration = 0;
 	
 	
-	@TraitEventsUsed(registerdClasses = {PlayerInteractEntityEvent.class, PlayerInteractEvent.class})
+	@TraitEventsUsed
 	@Override
 	public void generalInit() {
 	}
@@ -84,40 +79,64 @@ public class BackstabTrait extends AbstractBasicTrait implements Listener {
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		blocks = (Integer) configMap.get("blocks");
+		blocks = configMap.getAsInt("blocks");
 		
 		if(configMap.containsKey("strength")){
-			strength = (Integer) configMap.get("strength");
+			strength = configMap.getAsInt("strength");
 		}
 		
 		if(configMap.containsKey("duration")){
-			duration = (Integer) configMap.get("duration");
+			duration = configMap.getAsInt("duration");
 		}
 	}
 
 	
+	public static List<String> getHelpForTrait(){
+		List<String> helpList = new LinkedList<String>();
+		helpList.add(ChatColor.YELLOW + "The trait lets you Poison your Weapon.");
+		helpList.add(ChatColor.YELLOW + "Poison your weapon with a ROSE in the Workbench.");
+		
+		return helpList;
+	}
+	
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
-		Player player = null;
-		LivingEntity target = null;
+	public boolean isBetterThan(Trait trait) {
+		if(!(trait instanceof BackstabTrait)) return false;
+		BackstabTrait otherTrait = (BackstabTrait) trait;
 		
-		if(event instanceof PlayerInteractEntityEvent){
-			PlayerInteractEntityEvent Eevent = (PlayerInteractEntityEvent) event;
-			target = (LivingEntity) Eevent.getRightClicked();
-			player = Eevent.getPlayer();
+		return blocks >= otherTrait.blocks;
+	}
+
+
+	@TraitInfos(category="activate", traitName="BackstabTrait", visible=true)
+	@Override
+	public void importTrait() {
+	}
+
+	@Override
+	public boolean canBeTriggered(EventWrapper wrapper) {		
+		return false;
+	}
+
+	@Override
+	public boolean triggerButHasUplink(EventWrapper wrapper) {
+		//Not needed
+		return false;
+	}
+	
+	@Override
+	public boolean notifyTriggeredUplinkTime(EventWrapper wrapper) {
+		return true;
+	}
+
+
+	@Override
+	public TraitResults trigger(RaCPlayer player) {
+		Creature target = SearchEntity.inLineOfSight(blocks, player.getPlayer());
+		
+		if(target == null){
+			return TraitResults.False();
 		}
-		
-		if(event instanceof PlayerInteractEvent && target == null){
-			PlayerInteractEvent Eevent = (PlayerInteractEvent) event;
-			player = Eevent.getPlayer();
-			if(Eevent.getAction() == Action.RIGHT_CLICK_AIR){
-				target = SearchEntity.inLineOfSight(blocks, player);
-			}
-		}
-		
-		
-		if(player == null || target == null) return TraitResults.False();
-		
 		
 		Location targetLocation = target.getLocation().add(0, 0.3, 0);
 		Location playerLocation = player.getLocation();
@@ -145,10 +164,10 @@ public class BackstabTrait extends AbstractBasicTrait implements Listener {
 			targetLocation = target.getLocation();
 		}
 		
-		player.teleport(targetLocation);
+		player.getPlayer().teleport(targetLocation);
 		
 		if(strength > 0 && duration > 0){
-			player.addPotionEffect(new PotionEffect(
+			player.getPlayer().addPotionEffect(new PotionEffect(
 					PotionEffectType.INCREASE_DAMAGE, 
 					duration * 20, 
 					strength)
@@ -156,57 +175,6 @@ public class BackstabTrait extends AbstractBasicTrait implements Listener {
 		}
 		
 		return TraitResults.True();
-	}
-	
-	
-	public static List<String> getHelpForTrait(){
-		List<String> helpList = new LinkedList<String>();
-		helpList.add(ChatColor.YELLOW + "The trait lets you Poison your Weapon.");
-		helpList.add(ChatColor.YELLOW + "Poison your weapon with a ROSE in the Workbench.");
-		
-		return helpList;
-	}
-	
-	@Override
-	public boolean isBetterThan(Trait trait) {
-		if(!(trait instanceof BackstabTrait)) return false;
-		BackstabTrait otherTrait = (BackstabTrait) trait;
-		
-		return blocks >= otherTrait.blocks;
-	}
-
-
-	@TraitInfos(category="activate", traitName="BackstabTrait", visible=true)
-	@Override
-	public void importTrait() {
-	}
-
-	@Override
-	public boolean canBeTriggered(EventWrapper wrapper) {
-		PlayerAction action = wrapper.getPlayerAction();
-		if(!(action == PlayerAction.INTERACT_AIR 
-				|| action == PlayerAction.INTERACT_ENTITY)) return false;
-		
-		if(action == PlayerAction.INTERACT_AIR){
-			return true;
-		}
-		
-		if(action == PlayerAction.INTERACT_ENTITY){
-			return true;
-		}
-		
-		return false;
-	}
-
-	@Override
-	public boolean triggerButHasUplink(EventWrapper wrapper) {
-		//Not needed
-		return false;
-	}
-	
-	@Override
-	public boolean notifyTriggeredUplinkTime(EventWrapper wrapper) {
-		return true;
 	}
 	
 }

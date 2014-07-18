@@ -74,7 +74,7 @@ public class ShovelDamageIncreaseTrait extends AbstractPassiveTrait{
 	@Override
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
-		double newValue = getNewValue(Eevent.getDamage());
+		double newValue = getNewValue(eventWrapper.getPlayer(), Eevent.getDamage());
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 		return TraitResults.True();

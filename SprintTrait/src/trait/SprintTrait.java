@@ -102,10 +102,11 @@ public class SprintTrait extends AbstractBasicTrait {
 		if(player.getItemInHand().getType() != itemIDInHand) return TraitResults.False();
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
-		player.addPotionEffect(PotionEffectTypeWrapper.SPEED.createEffect(duration * 20, value - 1), true);
+		int modDur = modifyToPlayer(eventWrapper.getPlayer(), duration);
+		player.addPotionEffect(PotionEffectTypeWrapper.SPEED.createEffect(modDur * 20, value - 1), true);
 		sprinting.add(player.getName());
 		
-		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), duration, Keys.trait_faded,
+		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), modDur, Keys.trait_faded,
 				"name", getDisplayName());
 
 		scheduleRemovalOfName(player.getName());

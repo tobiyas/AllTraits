@@ -75,7 +75,7 @@ public class DamageReduceTrait extends AbstractPassiveTrait{
 		if(Eevent.getEntityType() != EntityType.PLAYER) return TraitResults.False();
 		
 		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-		double newValue = getNewValue(oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);			
 		return TraitResults.True();

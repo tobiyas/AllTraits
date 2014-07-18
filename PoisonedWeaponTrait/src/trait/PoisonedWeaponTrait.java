@@ -34,6 +34,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
@@ -52,8 +53,10 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	
 	private double seconds = 0;
 	private double totalDamage = 0;
+	
 	private double chance = 0.20;
 	private int applications = 0;
+	
 	private Material poinsonMaterial = Material.RED_ROSE;
 	
 	private Random rand = new SecureRandom();
@@ -130,7 +133,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 			if(EnemyChecker.areAllies(causer, target)) return TraitResults.False();
 			
 			int time = (int) seconds * 20;
-			int amplifier = (int) totalDamage;
+			int amplifier = (int) modifyToPlayer(RaCPlayerManager.get().getPlayer(causer), totalDamage);
 			
 			PotionEffect effect = new PotionEffect(PotionEffectType.POISON, time, amplifier);
 			target.addPotionEffect(effect, true);

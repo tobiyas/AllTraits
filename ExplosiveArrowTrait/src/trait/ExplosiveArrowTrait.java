@@ -32,6 +32,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.eventprocessing.TraitEventManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -136,12 +137,12 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 		}
 		
 		HashSet<LivingEntity> damageTo = getEntitiesNear(loc, duration);
-		arrowMap.remove(arrow);
+		Player player = arrowMap.remove(arrow);
 		
 		Entity shooter = Shooter.getShooter(arrow);
 		for(LivingEntity entity : damageTo){
 			Event newEvent = CompatibilityModifier.EntityDamageByEntity
-					.safeCreateEvent(shooter, entity, DamageCause.ENTITY_EXPLOSION, totalDamage);
+					.safeCreateEvent(shooter, entity, DamageCause.ENTITY_EXPLOSION, modifyToPlayer(RaCPlayerManager.get().getPlayer(player), totalDamage));
 			
 			TraitEventManager.fireEvent(newEvent);
 		}
