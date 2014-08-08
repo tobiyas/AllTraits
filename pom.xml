@@ -66,6 +66,7 @@
 		<module>ExplosiveArrowTrait</module>
 		<module>FireArrowTrait</module>
 		<module>LongArrowTrait</module>
+		<module>MightyArrowTrait</module>
 		<module>MultishotArrowTrait</module>
 		<module>PoisonArrowTrait</module>
 		<module>PotionArrowTrait</module>

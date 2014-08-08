@@ -76,14 +76,13 @@ public class ToolTrait extends AbstractPassiveTrait{
 		allowed.clear();
 		
 		if(configMap.containsKey("tools")){
-			@SuppressWarnings("unchecked")
-			List<String> toParse = (List<String>) configMap.get("forbid");
+			List<String> toParse = configMap.getAsStringList("forbid");
 			for(String matName : toParse){
 				boolean notAllowed = matName.charAt(0) == '-';
 				matName = matName.replace("+", "").replace("-", "").toUpperCase();
 				
 				try{
-					Material mat = Material.valueOf(matName);
+					Material mat = Material.matchMaterial(matName);
 					if(mat == null) continue;
 						
 					if(notAllowed){
@@ -116,7 +115,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 		
 		
 		if(!isOnAllowList(interactingWith)) {
-			eventWrapper.getPlayer().sendMessage(ChatColor.RED + "You may not use this Tool.");			
+			eventWrapper.getPlayer().sendMessage(ChatColor.RED + "You may not use this Tool.");
 			return TraitResults.False();
 		}
 		
