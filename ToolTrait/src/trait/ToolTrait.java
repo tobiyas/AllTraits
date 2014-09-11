@@ -76,7 +76,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 		allowed.clear();
 		
 		if(configMap.containsKey("tools")){
-			List<String> toParse = configMap.getAsStringList("forbid");
+			List<String> toParse = configMap.getAsStringList("tools");
 			for(String matName : toParse){
 				boolean notAllowed = matName.charAt(0) == '-';
 				matName = matName.replace("+", "").replace("-", "").toUpperCase();
