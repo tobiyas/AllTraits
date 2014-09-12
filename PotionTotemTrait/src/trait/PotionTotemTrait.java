@@ -17,9 +17,9 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -29,6 +29,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.AbstractTotemTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class PotionTotemTrait extends AbstractTotemTrait {
@@ -61,7 +62,7 @@ public class PotionTotemTrait extends AbstractTotemTrait {
 			@TraitConfigurationField(fieldName = "amplifier", classToExpect = Integer.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		if(configMap.containsKey("effect")){
@@ -84,7 +85,6 @@ public class PotionTotemTrait extends AbstractTotemTrait {
 	@TraitInfos(category = "totem", traitName = "PotionTotemTrait", visible = true)
 	@Override
 	public void importTrait() {
-		super.importTrait();
 	}
 
 
@@ -95,13 +95,22 @@ public class PotionTotemTrait extends AbstractTotemTrait {
 
 
 	@Override
-	protected void tickOn(TotemInfos infos, Player player) {
+	protected void tickOnPlayer(TotemInfos infos, Player player) {
 		if(effect == null) return; //no effect -> nothing to add.
 		
-		PotionEffect toApply = new PotionEffect(effect, 2 * 20, amplifier);
+		int modAmp = modifyToPlayer(infos.getOwner(), amplifier);
+		PotionEffect toApply = new PotionEffect(effect, 2 * 20, modAmp);
 		player.addPotionEffect(toApply);
 	}
 
+	@Override
+	protected void tickOnNonPlayer(TotemInfos infos, LivingEntity entity) {
+		if(effect == null) return; //no effect -> nothing to add.
+		
+		int modAmp = modifyToPlayer(infos.getOwner(), amplifier);
+		PotionEffect toApply = new PotionEffect(effect, 2 * 20, modAmp);
+		entity.addPotionEffect(toApply);
+	}
 
 	@Override
 	protected String getPrettyConfigIntern() {

@@ -17,15 +17,12 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
@@ -35,6 +32,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class DamageReduceTrait extends AbstractPassiveTrait{
@@ -61,7 +59,7 @@ public class DamageReduceTrait extends AbstractPassiveTrait{
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		operation = (String) configMap.get("operation");
@@ -75,16 +73,12 @@ public class DamageReduceTrait extends AbstractPassiveTrait{
 		EntityDamageEvent Eevent = (EntityDamageEvent) event;
 		
 		if(Eevent.getEntityType() != EntityType.PLAYER) return TraitResults.False();
-		Player target = (Player) Eevent.getEntity();
 		
-		if(TraitHolderCombinder.checkContainer(target.getName(), this)){
-			double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldValue);
-			
-			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);			
-			return TraitResults.True();
-		}
-		return TraitResults.False();
+		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
+		
+		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);			
+		return TraitResults.True();
 	}
 	
 	

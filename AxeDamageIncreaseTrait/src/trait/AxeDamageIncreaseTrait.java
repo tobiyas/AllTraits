@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -35,6 +34,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class AxeDamageIncreaseTrait extends AbstractPassiveTrait{
@@ -64,7 +64,7 @@ public class AxeDamageIncreaseTrait extends AbstractPassiveTrait{
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class, optional = false)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		operation = (String) configMap.get("operation");
 		value = (Double) configMap.get("value");
@@ -73,7 +73,7 @@ public class AxeDamageIncreaseTrait extends AbstractPassiveTrait{
 	@Override
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
-		double newValue = getNewValue(Eevent.getDamage());
+		double newValue = getNewValue(eventWrapper.getPlayer(), Eevent.getDamage());
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 		return TraitResults.True();
@@ -121,7 +121,7 @@ public class AxeDamageIncreaseTrait extends AbstractPassiveTrait{
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
-		if(!checkItemIsAxe(wrapper.getPlayer().getItemInHand())) return false;
+		if(!checkItemIsAxe(wrapper.getPlayer().getPlayer().getItemInHand())) return false;
 		
 		return true;
 	}

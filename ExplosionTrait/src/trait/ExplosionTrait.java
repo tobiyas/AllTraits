@@ -17,17 +17,16 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -36,6 +35,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ExplosionTrait extends AbstractMagicSpellTrait  {
@@ -90,14 +90,14 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 		})
 	
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		this.damage = (Double) configMap.get("damage");
-		this.range = (Integer) configMap.get("range");
+		this.damage = configMap.getAsDouble("damage");
+		this.range = configMap.getAsInt("range");
 		
 		if(configMap.containsKey("explode")){
-			this.explode = (Boolean) configMap.get("explode");
+			this.explode = configMap.getAsBool("explode");
 		}
 	}
 
@@ -118,18 +118,20 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 	}
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
-		Location location = player.getEyeLocation();
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
+		Location location = player.getPlayer().getEyeLocation();
 
-		player.setNoDamageTicks(10);
+		player.getPlayer().setNoDamageTicks(10);
 
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.NORTH).getLocation(), 0);
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.EAST).getLocation(), 0);
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.SOUTH).getLocation(), 0);
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.WEST).getLocation(), 0);
 		
+		double modDamage = modifyToPlayer(player, damage);
+		
 		if(explode){
-			if(location.getWorld().createExplosion(location, (float) damage)){
+			if(location.getWorld().createExplosion(location, (float) modDamage)){
 				result.setTriggered(true);
 				return;
 			}
@@ -142,13 +144,13 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 			}
 			
 			EntityDamageByEntityEvent damageEvent = CompatibilityModifier.EntityDamageByEntity.
-					safeCreateEvent(player, entity, DamageCause.ENTITY_EXPLOSION, damage);
+					safeCreateEvent(player.getPlayer(), entity, DamageCause.ENTITY_EXPLOSION, modDamage);
 			plugin.fireEventToBukkit(damageEvent);
 			
 			double newDamage = CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent);
 			if(!damageEvent.isCancelled() && newDamage > 0){
 				de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier.LivingEntity
-					.safeDamageEntity(entity, newDamage);
+					.safeDamageEntityByEntity(entity, player.getPlayer(), newDamage);
 			}
 		}	
 		

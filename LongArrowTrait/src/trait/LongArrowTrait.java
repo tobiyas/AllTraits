@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Projectile;
@@ -31,6 +30,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class LongArrowTrait extends AbstractArrow {
@@ -66,7 +66,7 @@ public class LongArrowTrait extends AbstractArrow {
 			@TraitConfigurationField(fieldName = "speed", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		speed = (Double) configMap.get("speed");

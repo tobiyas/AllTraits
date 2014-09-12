@@ -17,10 +17,10 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -39,6 +39,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class BashTrait extends AbstractPassiveTrait{
@@ -70,7 +71,7 @@ public class BashTrait extends AbstractPassiveTrait{
 					@TraitConfigurationField(fieldName = "duration", classToExpect = Double.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		value = (Double) configMap.get("chance");
 		
@@ -84,17 +85,14 @@ public class BashTrait extends AbstractPassiveTrait{
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 		double num = new Random().nextDouble() * 100;
-		if(num <= value){
+		if(num <= modifyToPlayer(eventWrapper.getPlayer(), value)){
 			Eevent.setCancelled(true);
 			Player player = (Player) Eevent.getDamager();
 			LivingEntity target = (LivingEntity) Eevent.getEntity();
+			Entity damager = Eevent.getDamager();
 			
 			int ticks = (int) Math.floor(duration * 20d);
-			if(target instanceof Player){
-				StunAPI.StunPlayer.stunPlayerForTicks(((Player) target).getName(), ticks);
-			}else{
-				StunAPI.StunEntity.stunEntityForTicks(target, ticks);				
-			}
+			StunAPI.StunEntity.stunEntityForTicks(damager, target, ticks);
 			
 			String targetName = target instanceof Player ? ((Player)target).getName() : target.getType().name().toLowerCase();
 			LanguageAPI.sendTranslatedMessage(player, Keys.trait_bash_success, "name", targetName);

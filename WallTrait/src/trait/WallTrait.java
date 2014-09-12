@@ -26,10 +26,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
@@ -37,6 +37,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractContinousCostMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
@@ -91,7 +92,7 @@ public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
 			@TraitConfigurationField(fieldName = "material", classToExpect = String.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		this.material = Material.GLASS;
@@ -114,9 +115,9 @@ public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
 
 
 	@Override
-	protected boolean activateIntern(Player player) {
+	protected boolean activateIntern(RaCPlayer player) {
 		@SuppressWarnings("deprecation")
-		List<Block> blocks = player.getLineOfSight(new HashSet<Byte>(), 3);
+		List<Block> blocks = player.getPlayer().getLineOfSight(new HashSet<Byte>(), 3);
 		Location location = blocks.get(blocks.size() - 1).getLocation();
 		
 		Location from = location.clone();
@@ -152,7 +153,7 @@ public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
 	
 
 	@Override
-	protected boolean deactivateIntern(Player player){
+	protected boolean deactivateIntern(RaCPlayer player){
 		OldWallBlocks blocks = wallBlocks.get(player.getName());
 		if(blocks != null){
 			blocks.removeWall();
@@ -179,7 +180,7 @@ public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
 	}
 
 	@Override
-	protected boolean tickInternal(Player player) {
+	protected boolean tickInternal(RaCPlayer player) {
 		//nothing to tick.
 		return true;
 	}

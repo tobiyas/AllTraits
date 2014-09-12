@@ -18,22 +18,45 @@ package trait;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
+import de.tobiyas.racesandclasses.RacesAndClasses;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.damage.PreEntityDamageEvent;
+import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
+import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class FireballTrait extends AbstractMagicSpellTrait  {
+public class FireballTrait extends AbstractMagicSpellTrait implements Listener  {
 
+	private double damage = 3;
+	
+	public FireballTrait() {
+		Bukkit.getPluginManager().registerEvents(this, (Plugin) RacesAndClasses.getPlugin());
+	}
+	
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class})
 	@Override
 	public void generalInit() {
@@ -56,6 +79,19 @@ public class FireballTrait extends AbstractMagicSpellTrait  {
 	public void importTrait() {
 	}
 
+	@TraitConfigurationNeeded(fields = {
+			@TraitConfigurationField(classToExpect = Double.class, fieldName = "damage", optional = true)
+	})
+	@Override
+	public void setConfiguration(TraitConfiguration configMap)
+			throws TraitConfigurationFailedException {
+		super.setConfiguration(configMap);
+		
+		if(configMap.containsKey("damage")){
+			damage = configMap.getAsDouble("damage");
+		}
+	}
+	
 	
 	@Override
 	public boolean isBetterThan(Trait trait) {
@@ -72,9 +108,36 @@ public class FireballTrait extends AbstractMagicSpellTrait  {
 		return helpList;
 	}
 
+	
+	private final String META_KEY = "RAC_PLAYER_META";
 
+	
+	@EventHandler
+	public void fireballHit(ProjectileHitEvent event){
+		if(event.getEntity().hasMetadata(META_KEY)){
+			RaCPlayer shooter = (RaCPlayer) event.getEntity().getMetadata(META_KEY).get(0).value();
+			double modDamge = modifyToPlayer(shooter, damage);
+			
+			List<Entity> nearEntities = SearchEntity.inCircleAround(event.getEntity(), 4);
+			for(Entity near : nearEntities){
+				//don't do damage to yourself!
+				if(near == shooter.getPlayer()) continue;
+				
+				if(near instanceof LivingEntity){
+					if(EnemyChecker.areAllies(shooter.getPlayer(), near)){
+						double realDamage = PreEntityDamageEvent.getRealDamage(shooter.getPlayer(), near, DamageCause.MAGIC, modDamge);
+						de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier.LivingEntity
+							.safeDamageEntityByEntity((LivingEntity)near, shooter.getPlayer(), realDamage);
+					}
+				}
+			}
+			
+			event.getEntity().remove();
+		}
+	}
+	
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		Vector viewDirection = player.getLocation().getDirection();
 		if(viewDirection == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);
@@ -82,8 +145,10 @@ public class FireballTrait extends AbstractMagicSpellTrait  {
 			return;
 		}
 		
-		Fireball fireball = player.launchProjectile(Fireball.class);
+		Fireball fireball = player.getPlayer().launchProjectile(Fireball.class);
 		fireball.setVelocity(viewDirection);
+		
+		fireball.setMetadata(META_KEY, new FixedMetadataValue((Plugin) plugin, player));
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.launched_something, "name", "Fireball");
 		result.setTriggered(true);

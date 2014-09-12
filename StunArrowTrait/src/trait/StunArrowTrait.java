@@ -18,7 +18,6 @@ package trait;
 import java.security.SecureRandom;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Arrow;
@@ -31,6 +30,8 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.StunAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
@@ -38,6 +39,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class StunArrowTrait extends AbstractArrow {
@@ -79,7 +81,7 @@ public class StunArrowTrait extends AbstractArrow {
 			@TraitConfigurationField(fieldName = "chance", classToExpect = Double.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		duration = (Integer) configMap.get("duration");
@@ -109,27 +111,31 @@ public class StunArrowTrait extends AbstractArrow {
 		//chance did not hit.
 		if(rand.nextDouble() > chance) return false;
 		
-		boolean stunned = StunAPI.StunEntity.stunEntityForSeconds(hitTarget, duration);
-		if(stunned){
-			Player shooter = null;
-			if(event.getDamager() instanceof Arrow){
-				Arrow arrow = (Arrow) event.getDamager();
-				if(arrow.getShooter() instanceof Player){
-					shooter = (Player) arrow.getShooter();
-				}
-			}else{
-				if(event.getDamager() instanceof Player){
-					shooter = (Player) event.getDamager();
-				}
+		
+		Player shooter = null;
+		if(event.getDamager() instanceof Arrow){
+			Arrow arrow = (Arrow) event.getDamager();
+			if(arrow.getShooter() instanceof Player){
+				shooter = (Player) arrow.getShooter();
 			}
-			
+		}else{
+			if(event.getDamager() instanceof Player){
+				shooter = (Player) event.getDamager();
+			}
+		}
+		
+		RaCPlayer racshooter = RaCPlayerManager.get().getPlayer((Player) shooter);
+		int modDur = modifyToPlayer(racshooter, duration);
+		
+		boolean stunned = StunAPI.StunEntity.stunEntityForSeconds(shooter, hitTarget, modDur);
+		if(stunned){
 			if(shooter != null){
 				String enemy = hitTarget instanceof Player ? 
 						((Player)hitTarget).getName() : 
 						hitTarget.getType().name();
 				
 				LanguageAPI.sendTranslatedMessage(shooter, Keys.trait_stun_arrow_success,
-						"duration", String.valueOf(duration), "target", enemy);
+						"duration", String.valueOf(modDur), "target", enemy);
 			}
 		}
 		

@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -27,7 +26,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
+import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.AbstractTraitHolder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.events.holderevent.HolderSelectedEvent;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
@@ -37,6 +36,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class SwimmingSpeedTrait extends AbstractBasicTrait {
@@ -82,9 +82,7 @@ public class SwimmingSpeedTrait extends AbstractBasicTrait {
 			
 			
 			if(loginEvent.getResult() == Result.ALLOWED){
-				if(TraitHolderCombinder.checkContainer(player.getName(), this)){					
-					return new TraitResults( setPlayerSpeed(player));
-				}
+				return new TraitResults( setPlayerSpeed(player));
 			}
 		}
 		
@@ -126,10 +124,10 @@ public class SwimmingSpeedTrait extends AbstractBasicTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		this.value = (Double) configMap.get("value");
+		this.value = configMap.getAsDouble("value");
 	}
 
 	
@@ -152,8 +150,10 @@ public class SwimmingSpeedTrait extends AbstractBasicTrait {
 
 		if(event instanceof HolderSelectedEvent){
 			HolderSelectedEvent HolderSelectedEvent = (HolderSelectedEvent) event;
-			if(HolderSelectedEvent.getHolderToSelect() != holder) return false;
-			return true;
+			for(AbstractTraitHolder holder : getTraitHolders()){
+				if(HolderSelectedEvent.getHolderToSelect() == holder) return true;
+			}
+			return false;
 		}
 		
 		return false;

@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -33,6 +32,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.eventprocessing.TraitEventManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -40,6 +40,8 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier.Shooter;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ExplosiveArrowTrait extends AbstractArrow{
@@ -72,15 +74,13 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 			@TraitConfigurationField(fieldName = "explode", classToExpect = Boolean.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
-		duration = (Integer) configMap.get("radius");
-		totalDamage = (Double) configMap.get("damage");
+		duration = configMap.getAsInt("radius");
+		totalDamage = configMap.getAsDouble("damage");
 		
 		if(configMap.containsKey("explode")){
-			destroyBlocks = (Boolean) configMap.get("explode");
-		}else{
-			destroyBlocks = false;
+			destroyBlocks = configMap.getAsBool("explode");
 		}
 	}
 	
@@ -103,24 +103,7 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 		Arrow arrow = (Arrow) event.getEntity();
 		
 		Location loc = arrow.getLocation();
-		if(destroyBlocks){
-			loc.getWorld().createExplosion(loc, duration);
-			arrowMap.remove(arrow);
-			return true;
-		}else
-			loc.getWorld().createExplosion(loc, 0);
-		
-		HashSet<LivingEntity> damageTo = getEntitiesNear(loc, duration);
-		
-		for(LivingEntity entity : damageTo){
-			Event newEvent = CompatibilityModifier.EntityDamage
-					.safeCreateEvent(entity, DamageCause.BLOCK_EXPLOSION, totalDamage);
-			
-			TraitEventManager.fireEvent(newEvent);
-		}
-		
-		arrowMap.remove(arrow);
-		return false;
+		return explodeAt(arrow, loc);
 	}
 	
 	private HashSet<LivingEntity> getEntitiesNear(Location loc, int radius){
@@ -135,14 +118,16 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 		
 		return entitySet;
 	}
-
-	@Override
-	protected boolean onHitLocation(ProjectileHitEvent event) {
-		if(!(event.getEntity() instanceof Arrow)) return false;
-		if(!arrowMap.containsKey(event.getEntity())) return false;
-		Arrow arrow = (Arrow) event.getEntity();
-		
-		Location loc = arrow.getLocation();
+	
+	/**
+	 * Forces an Explosion on the Location passed.
+	 * 
+	 * @param arrow to use.
+	 * @param loc to use.
+	 * 
+	 * @return if it worked.
+	 */
+	protected boolean explodeAt(Arrow arrow, Location loc){
 		if(destroyBlocks){
 			loc.getWorld().createExplosion(loc, duration);
 			arrowMap.remove(arrow);
@@ -152,16 +137,27 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 		}
 		
 		HashSet<LivingEntity> damageTo = getEntitiesNear(loc, duration);
-		arrowMap.remove(arrow);
+		Player player = arrowMap.remove(arrow);
 		
+		Entity shooter = Shooter.getShooter(arrow);
 		for(LivingEntity entity : damageTo){
-			Event newEvent = CompatibilityModifier.EntityDamage
-					.safeCreateEvent(entity, DamageCause.BLOCK_EXPLOSION, totalDamage);
+			Event newEvent = CompatibilityModifier.EntityDamageByEntity
+					.safeCreateEvent(shooter, entity, DamageCause.ENTITY_EXPLOSION, modifyToPlayer(RaCPlayerManager.get().getPlayer(player), totalDamage));
 			
 			TraitEventManager.fireEvent(newEvent);
 		}
 		
 		return false;
+	}
+
+	@Override
+	protected boolean onHitLocation(ProjectileHitEvent event) {
+		if(!(event.getEntity() instanceof Arrow)) return false;
+		if(!arrowMap.containsKey(event.getEntity())) return false;
+		Arrow arrow = (Arrow) event.getEntity();
+		
+		Location loc = arrow.getLocation();
+		return explodeAt(arrow, loc);
 	}
 
 	@Override

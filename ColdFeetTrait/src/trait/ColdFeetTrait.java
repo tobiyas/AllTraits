@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,12 +25,14 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.MessageScheduleApi;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -42,6 +43,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ColdFeetTrait extends AbstractMagicSpellTrait {
@@ -57,10 +59,13 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 	private boolean turnBack = true;
 	
 	
-	private List<String> coldFeetList = new LinkedList<String>();
+	private final List<String> coldFeetList = new LinkedList<String>();
+	
+	private final List<ScheduleBackToWater> blocks = new LinkedList<ScheduleBackToWater>();
 	
 	
-	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class, PlayerMoveEvent.class})
+	@TraitEventsUsed(bypassClasses = {BlockBreakEvent.class},
+			registerdClasses = {PlayerInteractEvent.class, PlayerMoveEvent.class})
 	@Override
 	public void generalInit() {
 	}
@@ -82,7 +87,7 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 			@TraitConfigurationField(fieldName = "turnBack", classToExpect = Boolean.class, optional = true)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		duration = (Integer) configMap.get("duration");
@@ -116,6 +121,16 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
+		if(wrapper.getEvent() instanceof BlockBreakEvent){
+			BlockBreakEvent event = (BlockBreakEvent) wrapper.getEvent();
+			for(ScheduleBackToWater thread : blocks){
+				if(thread.getBlock() == event.getBlock()){
+					event.setCancelled(true);
+					return false;
+				}
+			}
+		}
+		
 		if(wrapper.getPlayerAction() == PlayerAction.PLAYER_MOVED){
 			return coldFeetList.contains(wrapper.getPlayer().getName());
 		}
@@ -178,7 +193,7 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 				Material blockMaterial = block.getType();
 				if(blockMaterial == Material.WATER || blockMaterial == Material.STATIONARY_WATER){
 					if(turnBack){
-						new ScheduleBackToWater(block, duration);
+						new ScheduleBackToWater(block, modifyToPlayer(eventWrapper.getPlayer(), duration));
 					}else{
 						block.setType(Material.ICE);
 					}
@@ -187,11 +202,16 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 			
 			return TraitResults.False();
 		}
+		
+		if(eventWrapper.getEvent() instanceof BlockBreakEvent){
+			
+		}
+		
 		return result;
 	}
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		final String playerName = player.getName();
 		
 		if(coldFeetList.contains(playerName)){

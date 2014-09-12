@@ -17,11 +17,11 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -29,7 +29,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
-import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -40,6 +39,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class VampirismTrait extends AbstractPassiveTrait{
@@ -68,7 +68,7 @@ public class VampirismTrait extends AbstractPassiveTrait{
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		value = (Double) configMap.get("value");
@@ -79,9 +79,12 @@ public class VampirismTrait extends AbstractPassiveTrait{
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 		double damage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
 		
-		Player damager = (Player) Eevent.getDamager();
+		boolean isArrow = eventWrapper.isArrowInvolved();
+		Player damager = (Player) (isArrow ? 
+				((Arrow)Eevent.getDamager()).getShooter() : 
+					Eevent.getDamager());
 		
-		double regain = damage * (value);
+		double regain = damage * (modifyToPlayer(eventWrapper.getPlayer(), value));
 		EntityRegainHealthEvent healEvent 
 			= new EntityRegainHealthEvent(damager, regain, RegainReason.MAGIC);
 		
@@ -127,14 +130,8 @@ public class VampirismTrait extends AbstractPassiveTrait{
 
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
-		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
-		
-		Player causer = wrapper.getPlayer();
-		if(TraitHolderCombinder.checkContainer(causer.getName(), this)){
-			return true;
-		}
-		
-		return false;
+		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;		
+		return true;
 	}
 	
 	

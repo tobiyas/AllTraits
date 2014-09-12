@@ -15,9 +15,9 @@
  ******************************************************************************/
 package trait;
 
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
@@ -30,6 +30,7 @@ import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.TraitEventManager;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.events.entitydamage.EntityHealEvent;
@@ -42,6 +43,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 import de.tobiyas.racesandclasses.util.traitutil.TraitPriority;
 
@@ -71,15 +73,17 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 	
 	@Override
 	protected String getPrettyConfigIntern(){
-		return " uplink-Time: " + (int) cooldownTime + " secs, heals: " + (int) value;
+		DecimalFormat format = new DecimalFormat("0.0");
+		return " uplink-Time: " + cooldownTime + " secs, heals: " + format.format(value);
 	}
 
 	@TraitConfigurationNeeded(fields = {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
+		
 		value = (Double) configMap.get("value");
 	}
 
@@ -89,13 +93,16 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 		Entity entity = Eevent.getEntity();
 		
 		Player player = (Player) entity;
+		RaCPlayer racPlayer = eventWrapper.getPlayer();
 		
-		double health = plugin.getPlayerManager().getHealthOfPlayer(player.getName()) - Eevent.getDamage();
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getName());
+		double health = racPlayer.getHealth() - Eevent.getDamage();
+		double maxHealth = racPlayer.getMaxHealth();
 		double percent = 100 * health / maxHealth;
 		
 		if(percent <= activationLimit){
-			EntityHealEvent ehEvent = new EntityHealEvent(player, value, RegainReason.MAGIC);
+			double modValue = modifyToPlayer(racPlayer, value);
+			
+			EntityHealEvent ehEvent = new EntityHealEvent(player, modValue, RegainReason.MAGIC);
 			TraitEventManager.fireEvent(ehEvent);
 			
 			double amount = CompatibilityModifier.EntityHeal.safeGetAmount(ehEvent);
@@ -156,10 +163,10 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 		Entity entity = Eevent.getEntity();
 		
 		if(!(entity instanceof Player)) return false;
-		Player player = (Player) entity;
+		RaCPlayer racPlayer = wrapper.getPlayer();
 		
-		double health = plugin.getPlayerManager().getHealthOfPlayer(player.getName()) - Eevent.getDamage();
-		double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getName());
+		double health = racPlayer.getHealth() - Eevent.getDamage();
+		double maxHealth = racPlayer.getMaxHealth();
 		double percent = 100 * health / maxHealth;
 		
 		if(percent <= activationLimit){

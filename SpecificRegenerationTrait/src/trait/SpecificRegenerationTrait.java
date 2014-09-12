@@ -17,15 +17,15 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.AbstractTraitHolder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapperFactory;
 import de.tobiyas.racesandclasses.eventprocessing.events.entitydamage.EntityHealEvent;
@@ -37,6 +37,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class SpecificRegenerationTrait extends AbstractBasicTrait {
@@ -62,24 +63,28 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 			
 			@Override
 			public void run() {
-				for(String playerName : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-					Player player = Bukkit.getPlayer(playerName);
-					EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player);
-					if(player != null 
-							&& !checkRestrictions(wrapper) 
-							&& canBeTriggered(wrapper)){
+				for(AbstractTraitHolder holder : SpecificRegenerationTrait.this.getTraitHolders()){
+					for(RaCPlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
+						if(player == null || !player.isOnline()) continue;
 						
-						EntityHealEvent regainHealthEvent = 
-								CompatibilityModifier.EntityHeal.safeGenerate(player, heal, RegainReason.REGEN);
-						
-						Bukkit.getPluginManager().callEvent(regainHealthEvent);
-						if(!regainHealthEvent.isCancelled()){
-							double newHealValue = CompatibilityModifier.EntityRegainHealth.safeGetAmount(regainHealthEvent);
-							CompatibilityModifier.BukkitPlayer.safeHeal(newHealValue, player);
+						EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player.getPlayer());
+						if(player != null  && wrapper != null && player.isOnline()
+								&& !checkRestrictions(wrapper) 
+								&& canBeTriggered(wrapper)){
+							
+							double modHeal = modifyToPlayer(player, heal);
+							EntityHealEvent regainHealthEvent = 
+									CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), modHeal, RegainReason.REGEN);
+							
+							Bukkit.getPluginManager().callEvent(regainHealthEvent);
+							if(!regainHealthEvent.isCancelled()){
+								double newHealValue = CompatibilityModifier.EntityRegainHealth.safeGetAmount(regainHealthEvent);
+								CompatibilityModifier.BukkitPlayer.safeHeal(newHealValue, player.getPlayer());
+							}
+							
+							plugin.getStatistics().traitTriggered(SpecificRegenerationTrait.this);
+							
 						}
-						
-						plugin.getStatistics().traitTriggered(SpecificRegenerationTrait.this);
-						
 					}
 				}
 				
@@ -129,7 +134,7 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 			@TraitConfigurationField(fieldName = "health", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		seconds = (Integer) configMap.get("seconds");
@@ -169,7 +174,7 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 
 	@Override
 	public boolean canBeTriggered(EventWrapper wrapper) {
-		Player player = wrapper.getPlayer();
+		RaCPlayer player = wrapper.getPlayer();
 		
 		int lightFromSky = player.getLocation().getBlock().getLightFromSky();
 		if(onlyOnDay){ //TODO fixme

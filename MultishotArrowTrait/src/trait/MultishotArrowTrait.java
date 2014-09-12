@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -30,11 +29,13 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class MultishotArrowTrait extends AbstractArrow {
@@ -77,7 +78,7 @@ public class MultishotArrowTrait extends AbstractArrow {
 			@TraitConfigurationField(fieldName = "useArrow", classToExpect = Boolean.class, optional = true)			
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		amountArrows = (Integer) configMap.get("amount");
@@ -97,7 +98,8 @@ public class MultishotArrowTrait extends AbstractArrow {
 		final int angle = 10;
 		int currentAngle = angle;
 		
-		for(int i = 1; i < amountArrows; i++){
+		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows);
+		for(int i = 1; i < modAmount; i++){
 			currentAngle = ((i + 1) /2 ) * angle;
 			
 			if(useArrow && !removeArrow(shooter)) return true;
@@ -109,7 +111,7 @@ public class MultishotArrowTrait extends AbstractArrow {
 			
 			i++;
 			
-			if(i < amountArrows){
+			if(i < modAmount){
 				if(useArrow && !removeArrow(shooter)) return true;
 				newVelocity = calcNewVelocity(oldVelocity.clone(), -currentAngle);
 				Arrow leftArrow = shooter.launchProjectile(Arrow.class);
@@ -130,17 +132,16 @@ public class MultishotArrowTrait extends AbstractArrow {
 	 * @return true if worked, false otherwise.
 	 */
 	private boolean removeArrow(Player shooter) {
-		for(ItemStack item : shooter.getInventory().getContents()){
-			if(item != null && item.getType() == Material.ARROW){
-				int newValue = item.getAmount() - 1;
-				if(newValue == 0){
-					item.setType(Material.AIR);
-				}else{
-					item.setAmount(newValue);
-				}
+		for(int i = 0; i < shooter.getInventory().getSize(); i++){
+			ItemStack item = shooter.getInventory().getItem(i);
+			if(item == null || item.getType() != Material.ARROW) continue;
+			
+			int newValue = item.getAmount() - 1;
+			item.setAmount(newValue);
+			if(newValue > 0) shooter.getInventory().setItem(i, item);
+			else shooter.getInventory().setItem(i, null);
 
-				return true;
-			}
+			return true;
 		}
 
 		return false;

@@ -18,7 +18,6 @@ package trait;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
@@ -42,6 +41,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class SprintTrait extends AbstractBasicTrait {
@@ -83,7 +83,7 @@ public class SprintTrait extends AbstractBasicTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Integer.class),
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		duration = (Integer) configMap.get("duration");
@@ -102,10 +102,11 @@ public class SprintTrait extends AbstractBasicTrait {
 		if(player.getItemInHand().getType() != itemIDInHand) return TraitResults.False();
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
-		player.addPotionEffect(PotionEffectTypeWrapper.SPEED.createEffect(duration * 20, value - 1), true);
+		int modDur = modifyToPlayer(eventWrapper.getPlayer(), duration);
+		player.addPotionEffect(PotionEffectTypeWrapper.SPEED.createEffect(modDur * 20, value - 1), true);
 		sprinting.add(player.getName());
 		
-		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), duration, Keys.trait_faded,
+		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), modDur, Keys.trait_faded,
 				"name", getDisplayName());
 
 		scheduleRemovalOfName(player.getName());

@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Arrow;
@@ -27,6 +26,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
@@ -38,6 +39,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class ArrowDamageIncreaseTrait extends AbstractPassiveTrait {
@@ -64,7 +66,7 @@ public class ArrowDamageIncreaseTrait extends AbstractPassiveTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class, optional = false)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		operation = (String) configMap.get("operation");
 		value = (Double) configMap.get("value");
@@ -84,9 +86,10 @@ public class ArrowDamageIncreaseTrait extends AbstractPassiveTrait {
 				|| shooter.getType() != EntityType.PLAYER) return TraitResults.False();
 		
 		Player playerShooter = (Player) shooter;
-		if(TraitHolderCombinder.checkContainer(playerShooter.getName(), this)){
+		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(playerShooter);
+		if(TraitHolderCombinder.checkContainer(racPlayer, this)){
 			double oldDamage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldDamage);
+			double newValue = getNewValue(racPlayer, oldDamage);
 			
 			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 			

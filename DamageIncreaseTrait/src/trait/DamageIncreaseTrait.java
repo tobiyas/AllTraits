@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Arrow;
@@ -35,6 +34,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class DamageIncreaseTrait extends AbstractPassiveTrait {
@@ -61,7 +61,7 @@ public class DamageIncreaseTrait extends AbstractPassiveTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		operation = (String) configMap.get("operation");
 		value = (Double) configMap.get("value");
@@ -76,7 +76,7 @@ public class DamageIncreaseTrait extends AbstractPassiveTrait {
 			entity = CompatibilityModifier.Shooter.getShooter((Arrow)entity);
 		
 		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-		double newValue = getNewValue(oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 		

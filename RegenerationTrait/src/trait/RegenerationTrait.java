@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
@@ -34,6 +33,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class RegenerationTrait extends AbstractPassiveTrait {
@@ -58,7 +58,7 @@ public class RegenerationTrait extends AbstractPassiveTrait {
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		operation = (String) configMap.get("operation");
@@ -70,7 +70,7 @@ public class RegenerationTrait extends AbstractPassiveTrait {
 		EntityRegainHealthEvent Eevent = (EntityRegainHealthEvent) event;
 		double oldValue = CompatibilityModifier.EntityRegainHealth
 				.safeGetAmount(Eevent);
-		double newValue = getNewValue(oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
 
 		CompatibilityModifier.EntityRegainHealth.safeSetAmount(Eevent, newValue);
 

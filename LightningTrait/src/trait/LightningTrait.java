@@ -23,19 +23,26 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class LightningTrait extends AbstractMagicSpellTrait  {
 
+	private double damage = 3;
+	
+	
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class})
 	@Override
 	public void generalInit() {
@@ -57,6 +64,20 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 	@Override
 	public void importTrait() {
 	}
+	
+	
+	@TraitConfigurationNeeded(fields = {
+			@TraitConfigurationField(fieldName = "damage", classToExpect = Double.class, optional = true)
+	})
+	@Override
+	public void setConfiguration(TraitConfiguration configMap)
+			throws TraitConfigurationFailedException {
+		super.setConfiguration(configMap);
+		
+		if(configMap.containsKey("damage")){
+			damage = configMap.getAsDouble("damage");
+		}
+	}
 
 	
 	@Override
@@ -76,9 +97,9 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(Player player, TraitResults result) {
+	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		@SuppressWarnings("deprecation")
-		Block toStrikeOn = player.getTargetBlock(null, 100);
+		Block toStrikeOn = player.getPlayer().getTargetBlock(null, 100);
 		if(toStrikeOn == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);
 			result.setTriggered(false);
@@ -91,6 +112,7 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 			toStrikeOn = entities.get(0).getLocation().getBlock();
 		}
 		
+		//TODO fetch damage event and do own.
 		toStrikeOn.getWorld().strikeLightning(toStrikeOn.getLocation());
 		result.setTriggered(true);
 		return;

@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.entity.Player;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.bypasses.ByPassWorldDisabledCheck;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.bypasses.BypassHolderCheck;
@@ -34,6 +34,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 @BypassHolderCheck
@@ -92,7 +93,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 			@RemoveSuperConfigField(name = "seconds")
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		configMap.put("seconds", 1);
 		
 		super.setConfiguration(configMap);
@@ -116,12 +117,12 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 
 
 	@Override
-	protected boolean tickDoneForPlayer(Player player) {
+	protected boolean tickDoneForPlayer(RaCPlayer player) {
 	 	if(player == null || !player.isOnline()) return false; //player is not present.
-		if(player.getGameMode() == GameMode.CREATIVE) return false; //Creative players don't need checks
+		if(player.getPlayer().getGameMode() == GameMode.CREATIVE) return false; //Creative players don't need checks
 		
 		String playerName = player.getName();
-		int currentBreath = player.getRemainingAir();		
+		int currentBreath = player.getPlayer().getRemainingAir();		
 		
 		if(!currentTicks.containsKey(playerName)) {
 			AirStorage storage = new AirStorage();
@@ -153,7 +154,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 		}
 		
 		playerStorage.currentScaledAir = (int)((double)playerStorage.currentRawAir * ((double)DEFAULT_BREATH_TIME / (double)newTime));
-		player.setRemainingAir(playerStorage.currentScaledAir);
+		player.getPlayer().setRemainingAir(playerStorage.currentScaledAir);
 		return false;
 	}
 

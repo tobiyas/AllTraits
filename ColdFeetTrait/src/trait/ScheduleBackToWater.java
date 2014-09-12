@@ -18,6 +18,7 @@ package trait;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.plugin.Plugin;
 
 import de.tobiyas.racesandclasses.RacesAndClasses;
 
@@ -45,7 +46,7 @@ public class ScheduleBackToWater {
 
 
 	private void scheduleBack() {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(RacesAndClasses.getPlugin(), new Runnable() {
+		Bukkit.getScheduler().scheduleSyncDelayedTask((Plugin) RacesAndClasses.getPlugin(), new Runnable() {
 			
 			@Override
 			public void run() {
@@ -54,6 +55,13 @@ public class ScheduleBackToWater {
 			}
 		}, 20 * duration);
 	}
+
+
+	public Block getBlock() {
+		return block;
+	}
+	
+	
 	
 	
 }

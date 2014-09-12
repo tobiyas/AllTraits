@@ -17,7 +17,6 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Arrow;
@@ -32,6 +31,8 @@ import de.tobiyas.racesandclasses.APIs.CooldownApi;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.APIs.MessageScheduleApi;
 import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.TraitHolderCombinder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -43,6 +44,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class BerserkerRageTrait extends AbstractPassiveTrait{
@@ -76,7 +78,7 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		operation = (String) configMap.get("operation");
 		value = (Double) configMap.get("value");
@@ -97,7 +99,7 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 			
 			double oldDamage = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-			double newValue = getNewValue(oldDamage);
+			double newValue = getNewValue(eventWrapper.getPlayer(), oldDamage);
 			
 			CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 			return TraitResults.True();
@@ -149,8 +151,9 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			if(entity.getType() != EntityType.PLAYER) return false;
 			Player player = (Player) entity;
 			
-			double maxHealth = plugin.getPlayerManager().getMaxHealthOfPlayer(player.getName());
-			double currentHealth =  plugin.getPlayerManager().getHealthOfPlayer(player.getName());
+			RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
+			double maxHealth = racPlayer.getMaxHealth();
+			double currentHealth = racPlayer.getHealth();
 			double healthPercent = 100 * currentHealth / maxHealth;
 			if(healthPercent > activationLimit) return false;
 			if(!checkIfActive(player)) return false;
@@ -167,8 +170,9 @@ public class BerserkerRageTrait extends AbstractPassiveTrait{
 			
 			if(entity == null || entity.getType() != EntityType.PLAYER) return false;
 			Player player = (Player) entity;
+			RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
 			
-			if(TraitHolderCombinder.checkContainer(player.getName(), this)){
+			if(TraitHolderCombinder.checkContainer(racPlayer, this)){
 				if(!checkIfActive(player)) return false;
 				
 				return true;

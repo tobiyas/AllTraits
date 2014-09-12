@@ -17,24 +17,27 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.playermanagement.health.damagetickers.DamageTicker;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
+import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
+import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
 public class FireArrowTrait extends AbstractArrow {
@@ -65,7 +68,7 @@ public class FireArrowTrait extends AbstractArrow {
 			@TraitConfigurationField(fieldName = "totalDamage", classToExpect = Double.class)
 		})
 	@Override
-	public void setConfiguration(Map<String, Object> configMap) throws TraitConfigurationFailedException {
+	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
 		duration = (Integer) configMap.get("duration");
@@ -86,7 +89,9 @@ public class FireArrowTrait extends AbstractArrow {
 		Entity hitTarget = event.getEntity();
 		if(!(hitTarget instanceof LivingEntity)) return false;
 		
-		double damagePerTick = totalDamage / duration;
+		if(EnemyChecker.areAllies(event.getDamager(), hitTarget)) return false;
+		
+		double damagePerTick = modifyToPlayer(RaCPlayerManager.get().getPlayer((Player) event.getDamager()) ,totalDamage) / duration;
 		DamageTicker ticker = new DamageTicker((LivingEntity) hitTarget, duration, damagePerTick, DamageCause.FIRE_TICK, event.getDamager());
 		ticker.playEffectOnDmg(Effect.MOBSPAWNER_FLAMES, 4);
 		hitTarget.setFireTicks(duration * 20);
