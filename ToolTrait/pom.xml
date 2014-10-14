@@ -19,6 +19,11 @@
   <artifactId>ToolTrait</artifactId>
   <version>1</version>
   
+  	<properties>
+		<utilsVersion>1.0.11</utilsVersion>
+		<utilsAddition>RaC</utilsAddition>
+	</properties>
+  
 <!-- Repos -->
   <repositories>
   	<repository>

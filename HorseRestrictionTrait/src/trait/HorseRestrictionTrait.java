@@ -40,6 +40,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
@@ -56,28 +57,28 @@ public class HorseRestrictionTrait extends AbstractBasicTrait {
 	/**
 	 * The Permission to mount a horse.
 	 */
-	private boolean mount;
+	private boolean mount = true;
 	
 	/**
 	 * The Permission to leash a horse.
 	 */
-	private boolean leash;
+	private boolean leash = true;
 	
 	/**
 	 * The Permission to give a horse a chest.
 	 */
-	private boolean chest;
+	private boolean chest = true;
 	
 	/**
 	 * The Permission to tame a horse.
 	 */
-	private boolean tame;
+	private boolean tame = true;
 	
 	
 	/**
 	 * The Permission to jump with a horse
 	 */
-	private boolean jumping;
+	private boolean jumping = true;
 	
 	
 	@TraitEventsUsed(registerdClasses = {EntityTameEvent.class, HorseJumpEvent.class, 
@@ -85,11 +86,6 @@ public class HorseRestrictionTrait extends AbstractBasicTrait {
 			PlayerInteractEntityEvent.class})
 	@Override
 	public void generalInit() {
-		this.chest = true;
-		this.jumping = true;
-		this.leash = true;
-		this.mount = true;
-		this.tame = true;
 	}
 
 	
@@ -128,12 +124,19 @@ public class HorseRestrictionTrait extends AbstractBasicTrait {
 
 	
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
+	public TraitResults trigger(EventWrapper eventWrapper) {   
+		Event event = eventWrapper.getEvent();
 		if(event instanceof EntityTameEvent && !tame){
-			((Cancellable)event).setCancelled(true);
+			EntityTameEvent tameEvent = (EntityTameEvent) event;
+			//Only restrict horses.
+			if(tameEvent.getEntityType() != EntityType.HORSE) return TraitResults.False();
+			
+			tameEvent.setCancelled(true);
+			eventWrapper.getPlayer().sendTranslatedMessage(Keys.trait_horse_no_tame);
 			return TraitResults.True();
 		}
 		
+		//forbidding chesting.
 		if(event instanceof PlayerInteractEntityEvent && (!mount || !chest)){
 			PlayerInteractEntityEvent pieEvent = (PlayerInteractEntityEvent) event;
 			
@@ -158,22 +161,25 @@ public class HorseRestrictionTrait extends AbstractBasicTrait {
 		if(event instanceof HorseJumpEvent && !jumping){
 			HorseJumpEvent hjEvent = (HorseJumpEvent) event;
 			hjEvent.setCancelled(true);
+
+			eventWrapper.getPlayer().sendTranslatedMessage(Keys.trait_horse_no_jump);
 			return TraitResults.True();
 		}
 		
 		if(event instanceof PlayerLeashEntityEvent && !leash){
 			PlayerLeashEntityEvent pleEvent = (PlayerLeashEntityEvent) event;
 			pleEvent.setCancelled(true);
+
+			eventWrapper.getPlayer().sendTranslatedMessage(Keys.trait_horse_no_leash);
 			return TraitResults.True();
 		}
 		
 		if(event instanceof PlayerUnleashEntityEvent && !leash){
 			((Cancellable)event).setCancelled(true);
+
+			eventWrapper.getPlayer().sendTranslatedMessage(Keys.trait_horse_no_leash);
 			return TraitResults.True();
 		}
-		
-		
-		//TODO prevent chesting.
 		
 		return TraitResults.False();
 	}
@@ -189,24 +195,25 @@ public class HorseRestrictionTrait extends AbstractBasicTrait {
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
+		
 		if(configMap.containsKey(LEASH_PATH)){
-			this.leash = (Boolean) configMap.get(LEASH_PATH);
+			this.leash = configMap.getAsBool(LEASH_PATH);
 		}
 		
 		if(configMap.containsKey(CHEST_PATH)){
-			this.chest = (Boolean) configMap.get(CHEST_PATH);
+			this.chest = configMap.getAsBool(CHEST_PATH);
 		}
 		
 		if(configMap.containsKey(JUMPING_PATH)){
-			this.jumping = (Boolean) configMap.get(JUMPING_PATH);
+			this.jumping = configMap.getAsBool(JUMPING_PATH);
 		}
 		
 		if(configMap.containsKey(MOUNT_PATH)){
-			this.mount = (Boolean) configMap.get(MOUNT_PATH);
+			this.mount = configMap.getAsBool(MOUNT_PATH);
 		}
 		
 		if(configMap.containsKey(TAME_PATH)){
-			this.tame = (Boolean) configMap.get(TAME_PATH);
+			this.tame = configMap.getAsBool(TAME_PATH);
 		}
 		
 	}

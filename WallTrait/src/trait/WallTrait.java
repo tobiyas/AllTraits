@@ -21,11 +21,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
@@ -40,7 +44,7 @@ import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
+public class WallTrait extends AbstractContinousCostMagicSpellTrait implements Listener  {
 
 	/**
 	 * Material of the Wall
@@ -74,6 +78,7 @@ public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
 	@TraitInfos(category="magic", traitName="WallTrait", visible=true)
 	@Override
 	public void importTrait() {
+		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 
 	
@@ -161,6 +166,21 @@ public class WallTrait extends AbstractContinousCostMagicSpellTrait  {
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_wall_faded);
 		return true;
+	}
+	
+	
+	@EventHandler
+	public void onPlayerBreakBlock(BlockBreakEvent event){
+		Block block = event.getBlock();
+		
+		for(OldWallBlocks old : wallBlocks.values()){
+			if(old.contains(block.getLocation())){
+				event.setCancelled(true);
+				
+				old.remove(block);
+				break;
+			}
+		}
 	}
 	
 	

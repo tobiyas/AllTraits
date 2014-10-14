@@ -25,6 +25,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -46,7 +47,7 @@ import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class ColdFeetTrait extends AbstractMagicSpellTrait {
+public class ColdFeetTrait extends AbstractMagicSpellTrait  {
 
 	/**
 	 * The duration of this spell
@@ -68,12 +69,23 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 			registerdClasses = {PlayerInteractEvent.class, PlayerMoveEvent.class})
 	@Override
 	public void generalInit() {
+		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 	
 
 	@Override
 	public String getName(){
 		return "ColdFeetTrait";
+	}
+	
+	@EventHandler
+	public void onMine(BlockBreakEvent event){
+		for(ScheduleBackToWater block : blocks){
+			if(block.getBlock().equals(event.getBlock())){
+				event.setCancelled(true);
+				break;
+			}
+		}
 	}
 
 	
@@ -139,39 +151,6 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait {
 	}
 
 
-	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {
-		/*
-		if(event instanceof PlayerMoveEvent){
-			PlayerMoveEvent playerMoveEvent = (PlayerMoveEvent) event;
-			Player player = playerMoveEvent.getPlayer();
-			
-			//freeze water below feet
-			Location belowPlayerLocation = player.getLocation().subtract(0,1,0);
-			List<Block> blocksToCheck = new LinkedList<Block>();
-						
-			blocksToCheck.add(belowPlayerLocation.getBlock());
-			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.NORTH));
-			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.EAST));
-			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.SOUTH));
-			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.WEST));
-			
-			for(Block block : blocksToCheck){
-				Material blockMaterial = block.getType();
-				if(blockMaterial == Material.WATER || blockMaterial == Material.STATIONARY_WATER){
-					if(turnBack){
-						new ScheduleBackToWater(block, duration);
-					}else{
-						block.setType(Material.ICE);
-					}
-				}
-			}
-			
-			return TraitResults.False();
-		}*/ //TODO check if worked
-		
-		return super.trigger(eventWrapper);
-	}
 
 	@Override
 	protected TraitResults otherEventTriggered(EventWrapper eventWrapper, TraitResults result){

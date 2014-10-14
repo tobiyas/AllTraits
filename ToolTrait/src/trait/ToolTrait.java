@@ -35,6 +35,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.racesandclasses.util.MCPrettyName;
 
 public class ToolTrait extends AbstractPassiveTrait{
 
@@ -60,7 +61,13 @@ public class ToolTrait extends AbstractPassiveTrait{
 
 	@Override
 	protected String getPrettyConfigIntern(){
-		return "Well, yes...";
+		String forbidden = "Forbidden: ";
+		for(Material forbid : this.forbidden){
+			String name = MCPrettyName.getPrettyName(forbid);
+			forbidden += Character.toString(name.charAt(0)).toUpperCase() + name.toLowerCase().substring(1) + ", ";
+		}
+		
+		return forbidden.substring(0, forbidden.length() - 2);
 	}
 
 	
@@ -78,6 +85,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 		if(configMap.containsKey("tools")){
 			List<String> toParse = configMap.getAsStringList("tools");
 			for(String matName : toParse){
+				if(matName == null || matName.isEmpty()) continue;
 				boolean notAllowed = matName.charAt(0) == '-';
 				matName = matName.replace("+", "").replace("-", "").toUpperCase();
 				

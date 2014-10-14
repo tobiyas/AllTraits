@@ -18,7 +18,6 @@ package trait;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Creature;
@@ -114,9 +113,10 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 	
 	
 	private void setInvisibleToEverything(RaCPlayer player){
-		for(Player otherPlayer : Bukkit.getOnlinePlayers()){
+		for(Player otherPlayer : player.getWorld().getPlayers()){
 			otherPlayer.hidePlayer(player.getPlayer());
 		}
+		
 		//Canceling targeting of nearby entities.
 		for(Entity entity : player.getPlayer().getNearbyEntities(100, 100, 100)){
 			if(!(entity instanceof Creature)) continue;
@@ -129,7 +129,7 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 	
 	
 	private void setVisibleAgain(RaCPlayer player){
-		for(Player otherPlayer : Bukkit.getOnlinePlayers()){
+		for(Player otherPlayer : player.getWorld().getPlayers()){
 			otherPlayer.showPlayer(player.getPlayer());
 		}
 	}

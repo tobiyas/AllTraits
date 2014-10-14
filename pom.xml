@@ -40,6 +40,7 @@
 		<module>MiningSpeedTrait</module>
 		<module>MovementSpeedTrait</module>
 		<module>NightDamageTrait</module>
+		<module>PassiveAggroTrait</module>
 		<module>PermanentPotionTrait</module>
 		<module>PermissionTrait</module>
 		<module>PoisonedWeaponTrait</module>

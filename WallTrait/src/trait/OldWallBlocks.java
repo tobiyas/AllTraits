@@ -77,6 +77,20 @@ public class OldWallBlocks {
 			}
 		}
 	}
+	
+	
+	public void remove(Block block){
+		for(Location loc : blockList.keySet()){
+			if(loc.getBlock().equals(block)){
+				BlockData data = blockList.get(loc);
+				block.setTypeIdAndData(data.material.getId(), data.data, true);
+				
+				blockList.remove(loc);
+				return;
+			}
+		}
+	}
+	
 
 	private List<Location> getLocationsBetween(Location from, Location to, int height) {
 		List<Location> locations = new LinkedList<Location>();

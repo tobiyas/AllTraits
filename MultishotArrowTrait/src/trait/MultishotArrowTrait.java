@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -98,11 +99,14 @@ public class MultishotArrowTrait extends AbstractArrow {
 		final int angle = 10;
 		int currentAngle = angle;
 		
+		boolean hasInfiniteArrow = event.getBow().getItemMeta().hasEnchant(Enchantment.ARROW_INFINITE);
 		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows);
+		
 		for(int i = 1; i < modAmount; i++){
 			currentAngle = ((i + 1) /2 ) * angle;
 			
 			if(useArrow && !removeArrow(shooter)) return true;
+			
 			Vector newVelocity = calcNewVelocity(oldVelocity.clone(), currentAngle);
 			newVelocity = calcNewVelocity(oldVelocity.clone(), currentAngle);
 			Arrow RightArrow = shooter.launchProjectile(Arrow.class);
@@ -115,6 +119,7 @@ public class MultishotArrowTrait extends AbstractArrow {
 				if(useArrow && !removeArrow(shooter)) return true;
 				newVelocity = calcNewVelocity(oldVelocity.clone(), -currentAngle);
 				Arrow leftArrow = shooter.launchProjectile(Arrow.class);
+				
 				leftArrow.setVelocity(newVelocity);
 				leftArrow.setBounce(false);
 			}
