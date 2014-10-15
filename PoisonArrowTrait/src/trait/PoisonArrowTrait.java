@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -29,6 +30,7 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.potion.PotionEffectTypeWrapper;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayerManager;
 import de.tobiyas.racesandclasses.playermanagement.health.damagetickers.DamageTicker;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
@@ -36,6 +38,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
+import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
 import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
@@ -85,7 +88,13 @@ public class PoisonArrowTrait extends AbstractArrow {
 		
 		if(EnemyChecker.areAllies(event.getDamager(), hitTarget)) return false;
 		
-		double damagePerTick = modifyToPlayer(RaCPlayerManager.get().getPlayer((Player)event.getDamager()), totalDamage) / duration;
+		Entity damager = event.getDamager();
+		if(damager instanceof Arrow) damager = (Entity) CompatibilityModifier.Shooter.getShooter((Arrow) damager);
+		
+		if(!(damager instanceof Player)) return false;
+		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player) damager);
+		
+		double damagePerTick = modifyToPlayer(shooter, totalDamage) / duration;
 		DamageTicker ticker = new DamageTicker((LivingEntity) hitTarget, duration, damagePerTick, DamageCause.POISON, event.getDamager());
 		ticker.linkPotionEffect(PotionEffectTypeWrapper.POISON.createEffect(duration, 0));
 		return true;

@@ -182,10 +182,6 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait  {
 			return TraitResults.False();
 		}
 		
-		if(eventWrapper.getEvent() instanceof BlockBreakEvent){
-			
-		}
-		
 		return result;
 	}
 
