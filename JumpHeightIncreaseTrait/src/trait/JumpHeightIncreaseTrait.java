@@ -109,9 +109,10 @@ public class JumpHeightIncreaseTrait extends AbstractPassiveTrait {
 			
 			jumpingPlayer.add(player.getName());
 			if(preventFalldamage) {
-				preventNextFallDamage.add(player.getName());
+				final String name = player.getName();
+				preventNextFallDamage.add(name);
 				Bukkit.getScheduler().scheduleSyncDelayedTask((JavaPlugin)plugin, new Runnable(){ 
-						@Override public void run(){ preventNextFallDamage.remove(player.getName()); 
+						@Override public void run(){ preventNextFallDamage.remove(name); 
 					}}, ticksToPreventFallDamage);
 			}
 			
@@ -150,13 +151,15 @@ public class JumpHeightIncreaseTrait extends AbstractPassiveTrait {
 	public boolean canBeTriggered(EventWrapper wrapper) {
 		Event event = wrapper.getEvent();
 		if(event instanceof EntityDamageEvent){
+			if(!preventFalldamage) return false;
+			
 			EntityDamageEvent damageEvent = (EntityDamageEvent) event;
 			if(damageEvent.getEntityType() == EntityType.PLAYER){
 				Player player = (Player) damageEvent.getEntity();
 				if(damageEvent.getCause() == DamageCause.FALL){
 					if(preventNextFallDamage.contains(player.getName())){
 						damageEvent.setCancelled(true);
-						return true;
+						return false;
 					}
 				}
 			}

@@ -21,9 +21,9 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Material;
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
@@ -71,7 +71,7 @@ public class VampirismTrait extends AbstractPassiveTrait{
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		value = (Double) configMap.get("value");
+		value = configMap.getAsDouble("value");
 	}
 	
 	@Override
@@ -81,8 +81,8 @@ public class VampirismTrait extends AbstractPassiveTrait{
 		
 		boolean isArrow = eventWrapper.isArrowInvolved();
 		Player damager = (Player) (isArrow ? 
-				((Arrow)Eevent.getDamager()).getShooter() : 
-					Eevent.getDamager());
+				((Projectile)Eevent.getDamager()).getShooter() : 
+				Eevent.getDamager());
 		
 		double regain = damage * (modifyToPlayer(eventWrapper.getPlayer(), value));
 		EntityRegainHealthEvent healEvent 

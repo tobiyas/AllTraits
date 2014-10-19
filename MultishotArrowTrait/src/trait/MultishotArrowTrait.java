@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -38,6 +37,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.racesandclasses.vollotile.Vollotile;
 
 public class MultishotArrowTrait extends AbstractArrow {
 	
@@ -99,9 +99,7 @@ public class MultishotArrowTrait extends AbstractArrow {
 		final int angle = 10;
 		int currentAngle = angle;
 		
-		boolean hasInfiniteArrow = event.getBow().getItemMeta().hasEnchant(Enchantment.ARROW_INFINITE);
 		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows);
-		
 		for(int i = 1; i < modAmount; i++){
 			currentAngle = ((i + 1) /2 ) * angle;
 			
@@ -109,9 +107,12 @@ public class MultishotArrowTrait extends AbstractArrow {
 			
 			Vector newVelocity = calcNewVelocity(oldVelocity.clone(), currentAngle);
 			newVelocity = calcNewVelocity(oldVelocity.clone(), currentAngle);
-			Arrow RightArrow = shooter.launchProjectile(Arrow.class);
-			RightArrow.setVelocity(newVelocity);
-			RightArrow.setBounce(false);
+			Arrow rightArrow = shooter.launchProjectile(Arrow.class);
+			rightArrow.setVelocity(newVelocity);
+			rightArrow.setBounce(false);
+			
+			//if we do not use arrows, don't make it pickupable.
+			if(!useArrow) Vollotile.get().makeArrowPickupable((Arrow) rightArrow, useArrow);
 			
 			i++;
 			
@@ -122,6 +123,9 @@ public class MultishotArrowTrait extends AbstractArrow {
 				
 				leftArrow.setVelocity(newVelocity);
 				leftArrow.setBounce(false);
+				
+				//if we do not use arrows, don't make it pickupable.
+				if(!useArrow) Vollotile.get().makeArrowPickupable((Arrow) leftArrow, useArrow);
 			}
 			
 		}
@@ -192,7 +196,6 @@ public class MultishotArrowTrait extends AbstractArrow {
 
 	@Override
 	protected boolean onHitLocation(ProjectileHitEvent event) {
-		//Not needed
 		return false;
 	}
 
