@@ -155,6 +155,8 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait  {
 	@Override
 	protected TraitResults otherEventTriggered(EventWrapper eventWrapper, TraitResults result){
 		if(eventWrapper.getEvent() instanceof PlayerMoveEvent){
+			if(!coldFeetList.contains(eventWrapper.getPlayer().getName())) return TraitResults.False();
+			
 			PlayerMoveEvent playerMoveEvent = (PlayerMoveEvent) eventWrapper.getEvent();
 			Player player = playerMoveEvent.getPlayer();
 			
