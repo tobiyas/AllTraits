@@ -42,6 +42,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.TraitRestriction;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
@@ -150,14 +151,16 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait  {
 		return super.canBeTriggered(wrapper);
 	}
 
-
-
+	
 	@Override
-	protected TraitResults otherEventTriggered(EventWrapper eventWrapper, TraitResults result){
-		if(eventWrapper.getEvent() instanceof PlayerMoveEvent){
-			if(!coldFeetList.contains(eventWrapper.getPlayer().getName())) return TraitResults.False();
+	public void triggerButHasRestriction(TraitRestriction restriction,
+			EventWrapper wrapper) {
+		super.triggerButHasRestriction(restriction, wrapper);
+		
+		if(wrapper.getEvent() instanceof PlayerMoveEvent){
+			if(!coldFeetList.contains(wrapper.getPlayer().getName())) return;
 			
-			PlayerMoveEvent playerMoveEvent = (PlayerMoveEvent) eventWrapper.getEvent();
+			PlayerMoveEvent playerMoveEvent = (PlayerMoveEvent) wrapper.getEvent();
 			Player player = playerMoveEvent.getPlayer();
 			
 			//freeze water below feet
@@ -174,7 +177,42 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait  {
 				Material blockMaterial = block.getType();
 				if(blockMaterial == Material.WATER || blockMaterial == Material.STATIONARY_WATER){
 					if(turnBack){
-						new ScheduleBackToWater(block, modifyToPlayer(eventWrapper.getPlayer(), duration));
+						new ScheduleBackToWater(block, modifyToPlayer(wrapper.getPlayer(), duration));
+					}else{
+						block.setType(Material.ICE);
+					}
+				}
+			}
+			
+			return;
+		}
+	}
+	
+	@Override
+	protected TraitResults otherEventTriggered(EventWrapper wrapper,
+			TraitResults result) {
+		
+		if(wrapper.getEvent() instanceof PlayerMoveEvent){
+			if(!coldFeetList.contains(wrapper.getPlayer().getName())) return TraitResults.False();
+			
+			PlayerMoveEvent playerMoveEvent = (PlayerMoveEvent) wrapper.getEvent();
+			Player player = playerMoveEvent.getPlayer();
+			
+			//freeze water below feet
+			Location belowPlayerLocation = player.getLocation().subtract(0,1,0);
+			List<Block> blocksToCheck = new LinkedList<Block>();
+						
+			blocksToCheck.add(belowPlayerLocation.getBlock());
+			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.NORTH));
+			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.EAST));
+			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.SOUTH));
+			blocksToCheck.add(belowPlayerLocation.getBlock().getRelative(BlockFace.WEST));
+			
+			for(Block block : blocksToCheck){
+				Material blockMaterial = block.getType();
+				if(blockMaterial == Material.WATER || blockMaterial == Material.STATIONARY_WATER){
+					if(turnBack){
+						new ScheduleBackToWater(block, modifyToPlayer(wrapper.getPlayer(), duration));
 					}else{
 						block.setType(Material.ICE);
 					}
@@ -184,9 +222,9 @@ public class ColdFeetTrait extends AbstractMagicSpellTrait  {
 			return TraitResults.False();
 		}
 		
-		return result;
+		return super.otherEventTriggered(wrapper, result);
 	}
-
+	
 	@Override
 	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		final String playerName = player.getName();

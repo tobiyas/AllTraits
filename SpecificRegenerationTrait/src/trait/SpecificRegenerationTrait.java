@@ -20,35 +20,24 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
-import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.AbstractTraitHolder;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapperFactory;
 import de.tobiyas.racesandclasses.eventprocessing.events.entitydamage.EntityHealEvent;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class SpecificRegenerationTrait extends AbstractBasicTrait {
+public class SpecificRegenerationTrait extends TickEverySecondsTrait {
 
 	
-	private int schedulerTaskId = -1;
-	
-	/**
-	 * The Seconds when this is fired.
-	 */
-	private int seconds = 1;
 	
 	/**
 	 * The Damage done if set correct
@@ -59,43 +48,12 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 	@TraitEventsUsed(registerdClasses = {  })
 	@Override
 	public void generalInit() {
-		schedulerTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask((JavaPlugin)plugin, new Runnable() {
-			
-			@Override
-			public void run() {
-				for(AbstractTraitHolder holder : SpecificRegenerationTrait.this.getTraitHolders()){
-					for(RaCPlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
-						if(player == null || !player.isOnline()) continue;
-						
-						EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player.getPlayer());
-						if(player != null  && wrapper != null && player.isOnline()
-								&& !checkRestrictions(wrapper) 
-								&& canBeTriggered(wrapper)){
-							
-							double modHeal = modifyToPlayer(player, heal);
-							EntityHealEvent regainHealthEvent = 
-									CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), modHeal, RegainReason.REGEN);
-							
-							Bukkit.getPluginManager().callEvent(regainHealthEvent);
-							if(!regainHealthEvent.isCancelled()){
-								double newHealValue = CompatibilityModifier.EntityRegainHealth.safeGetAmount(regainHealthEvent);
-								CompatibilityModifier.BukkitPlayer.safeHeal(newHealValue, player.getPlayer());
-							}
-							
-							plugin.getStatistics().traitTriggered(SpecificRegenerationTrait.this);
-							
-						}
-					}
-				}
-				
-				
-			}
-		}, seconds * 20, seconds * 20);
+		super.generalInit();
 	}
 	
 	@Override
 	public void deInit(){
-		Bukkit.getScheduler().cancelTask(schedulerTaskId);
+		super.deInit();
 	}
 
 	@Override
@@ -103,53 +61,21 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 		return "SpecificRegenerationTrait";
 	}
 
-	@Override
-	protected String getPrettyConfigIntern(){
-		String reason = "Nothing";
-		if(onlyInLava){
-			reason = "in Lava";
-		}
-
-		if(onlyInWater){
-			reason = "in Water";
-		}
-
-		if(onlyOnLand){
-			reason = "on Land";
-		}
-
-		if(onlyOnDay && !onlyInNight){
-			reason = "in NightShine";
-		}
-		
-		if(onlyInNight && !onlyOnDay){
-			reason = "on DayLight";
-		}
-		
-		return "Damage: " + heal + " every: " + seconds + " sec for " + reason;
-	}
 
 	@TraitConfigurationNeeded( fields = {
-			@TraitConfigurationField(fieldName = "seconds", classToExpect = Integer.class), 
 			@TraitConfigurationField(fieldName = "health", classToExpect = Double.class)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		seconds = (Integer) configMap.get("seconds");
-		heal = (Double) configMap.get("health");
+		heal = configMap.getAsDouble("health");
 	}
 
-	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
-		//Not needed
-		return TraitResults.False();
-	}
 
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
-		helpList.add(ChatColor.YELLOW + "This trait does damage when the Preconditions are correct.");
+		helpList.add(ChatColor.YELLOW + "This trait heals when the Preconditions are correct.");
 		return helpList;
 	}
 
@@ -184,5 +110,25 @@ public class SpecificRegenerationTrait extends AbstractBasicTrait {
 		}
 
 		return true;
+	}
+
+	@Override
+	protected boolean tickDoneForPlayer(RaCPlayer player) {
+        double modHeal = modifyToPlayer(player, heal);
+        EntityHealEvent regainHealthEvent = 
+                CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), modHeal, RegainReason.REGEN);
+        
+        Bukkit.getPluginManager().callEvent(regainHealthEvent);
+        if(!regainHealthEvent.isCancelled()){
+            double newHealValue = CompatibilityModifier.EntityRegainHealth.safeGetAmount(regainHealthEvent);
+            CompatibilityModifier.BukkitPlayer.safeHeal(newHealValue, player.getPlayer());
+        }
+
+        return true;
+	}
+
+	@Override
+	protected String getPrettyConfigurationPre() {
+		return "Heal";
 	}
 }
