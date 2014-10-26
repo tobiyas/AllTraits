@@ -25,7 +25,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetEvent;
@@ -186,17 +186,18 @@ public class TauntTrait extends AbstractMagicSpellTrait implements Listener {
 
 	@Override
 	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
-		Creature target = SearchEntity.inLineOfSight(range, player.getPlayer());
+		LivingEntity targetToCheck = SearchEntity.inLineOfSight(range, player.getPlayer());
 		
-		if(target == null
+		if(targetToCheck == null
 				||!player.isOnline()
-				||target instanceof Player
-				||!target.isValid()  ) {
+				||!(targetToCheck instanceof Creature)
+				||!targetToCheck.isValid()  ) {
 			
 			result.copyFrom(TraitResults.False());
 			return;
 		}
 		
+		Creature target = (Creature) targetToCheck;
 		String targetName = target.getType().name();
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_taunt_success, 
 				"target", targetName);

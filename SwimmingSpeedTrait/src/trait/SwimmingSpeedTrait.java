@@ -61,7 +61,7 @@ public class SwimmingSpeedTrait extends AbstractBasicTrait {
 
 
 	
-	@TraitInfos(category="passive", traitName="MovementSpeedTrait", visible=true)
+	@TraitInfos(category="passive", traitName="SwimmingSpeedTrait", visible=true)
 	@Override
 	public void importTrait() {
 	}

@@ -59,7 +59,7 @@ public class MightyArrowTrait extends AbstractArrow {
 
 	@Override
 	protected String getPrettyConfigIntern(){
-		return "Effect: " + this.totalDamage + " Poison-Damage over " + duration + " seconds.";
+		return "Additional damage: " + additionalDamage;
 	}
 	
 	@TraitConfigurationNeeded(fields = {
@@ -114,7 +114,7 @@ public class MightyArrowTrait extends AbstractArrow {
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
 		helpList.add(ChatColor.YELLOW + "When you hit an target with an arrow and the MightyArrowTrait is selected,");
-		helpList.add(ChatColor.YELLOW + "the player will get More damage by this arrow.");
+		helpList.add(ChatColor.YELLOW + "the target will get More damage by this arrow.");
 		return helpList;
 	}
 	

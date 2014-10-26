@@ -120,9 +120,9 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 			@TraitConfigurationField( fieldName = "targetParticles", classToExpect = String.class, optional = true),
 			@TraitConfigurationField( fieldName = "showLine", classToExpect = Boolean.class, optional = true),
 
-			@TraitConfigurationField( fieldName = "potionAmplifier", classToExpect = Boolean.class, optional = true),
-			@TraitConfigurationField( fieldName = "potionType", classToExpect = Boolean.class, optional = true),
-			@TraitConfigurationField( fieldName = "potionDuration", classToExpect = Boolean.class, optional = true)
+			@TraitConfigurationField( fieldName = "potionAmplifier", classToExpect = Integer.class, optional = true),
+			@TraitConfigurationField( fieldName = "potionType", classToExpect = Integer.class, optional = true),
+			@TraitConfigurationField( fieldName = "potionDuration", classToExpect = Integer.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {

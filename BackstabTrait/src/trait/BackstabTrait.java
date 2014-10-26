@@ -21,7 +21,7 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Creature;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -132,7 +132,7 @@ public class BackstabTrait extends AbstractActivatableTrait implements Listener 
 
 	@Override
 	public TraitResults trigger(RaCPlayer player) {
-		Creature target = SearchEntity.inLineOfSight(blocks, player.getPlayer());
+		LivingEntity target = SearchEntity.inLineOfSight(blocks, player.getPlayer());
 		
 		if(target == null){
 			return TraitResults.False();
