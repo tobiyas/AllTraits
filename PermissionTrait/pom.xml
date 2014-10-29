@@ -50,13 +50,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Depends from tobiyas's Utils -->
-		<dependency>
-			<groupId>de.tobiyas</groupId>
-			<artifactId>Utils</artifactId>
-			<version>1.0.11</version>
-			<optional>true</optional>
-		</dependency>
 	</dependencies>
 
 

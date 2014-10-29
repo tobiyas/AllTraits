@@ -36,6 +36,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.util.RaC.permissions.PermissionManager;
 
 public class PermissionTrait extends TickEverySecondsTrait implements Listener {
 
@@ -142,7 +143,8 @@ public class PermissionTrait extends TickEverySecondsTrait implements Listener {
 				playersWithPerms.add(player);
 				
 				for(String perm : permissions){
-					plugin.getPermissionManager().addPermission(player.getPlayer(), perm);
+					PermissionManager permManager = plugin.getPermissionManager();
+					permManager.addPermission(player.getPlayer(), perm);
 				}
 			}
 		}else{
@@ -150,7 +152,8 @@ public class PermissionTrait extends TickEverySecondsTrait implements Listener {
 				playersWithPerms.remove(player);
 				
 				for(String perm : permissions){
-					plugin.getPermissionManager().removePermission(player.getPlayer(), perm);
+					PermissionManager permManager = plugin.getPermissionManager();
+					permManager.removePermission(player.getPlayer(), perm);
 				}
 			}
 		}
