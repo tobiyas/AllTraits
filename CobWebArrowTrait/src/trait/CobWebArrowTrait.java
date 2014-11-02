@@ -87,7 +87,7 @@ public class CobWebArrowTrait extends AbstractArrow implements Listener {
 	
 	@Override
 	protected boolean onShoot(EntityShootBowEvent event){
-		return false;
+		return true;
 	}
 	
 	@Override

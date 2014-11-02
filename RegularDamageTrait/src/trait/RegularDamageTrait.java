@@ -35,6 +35,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.TraitRestriction;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
@@ -66,7 +67,7 @@ public class RegularDamageTrait extends AbstractBasicTrait {
 					for(RaCPlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
 						EventWrapper wrapper = EventWrapperFactory.buildOnlyWithplayer(player.getPlayer());
 						if(player != null && wrapper != null
-								&& !checkRestrictions(wrapper) 
+								&& checkRestrictions(wrapper) != TraitRestriction.None
 								&& canBeTriggered(wrapper)){
 							
 							EntityDamageEvent damageEvent = 

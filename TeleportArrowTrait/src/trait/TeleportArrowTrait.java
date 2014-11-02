@@ -29,9 +29,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 
-import de.tobiyas.racesandclasses.RacesAndClasses;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
-import de.tobiyas.racesandclasses.configuration.traits.TraitConfig;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
@@ -42,8 +40,6 @@ import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedExcepti
 
 public class TeleportArrowTrait extends AbstractArrow {
 	
-	private RacesAndClasses plugin = RacesAndClasses.getPlugin();
-	
 	private HashMap<Arrow, Player> shootedArrows = new HashMap<Arrow, Player>();
 
 	public TeleportArrowTrait(){
@@ -52,10 +48,6 @@ public class TeleportArrowTrait extends AbstractArrow {
 	@TraitEventsUsed(registerdClasses = {})
 	@Override
 	public void generalInit(){
-		TraitConfig config = plugin.getConfigManager().getTraitConfigManager().getConfigOfTrait(getName());
-		if(config != null){
-			uplinkTime = (Integer) config.getValue("trait.uplink", 60);
-		}
 	}
 	
 
@@ -66,7 +58,7 @@ public class TeleportArrowTrait extends AbstractArrow {
 
 	@Override
 	protected String getPrettyConfigIntern(){
-		return "uplink: " + uplinkTime + " seconds";
+		return "Cooldown: " + cooldownTime + " seconds";
 	}
 
 	@TraitConfigurationNeeded
@@ -88,7 +80,7 @@ public class TeleportArrowTrait extends AbstractArrow {
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.launched_something, 
 				"name", getDisplayName());
-		return false;
+		return true;
 	}
 
 	@Override

@@ -78,7 +78,7 @@ public class PoisonArrowTrait extends AbstractArrow {
 	@Override
 	protected boolean onShoot(EntityShootBowEvent event) {
 		//Not needed
-		return false;
+		return true;
 	}
 
 	@Override

@@ -84,7 +84,7 @@ public class FireArrowTrait extends AbstractArrow {
 		Location loc = event.getEntity().getLocation();
 		loc.getWorld().playEffect(loc, Effect.MOBSPAWNER_FLAMES, 0);
 		event.getProjectile().setFireTicks(1000000);
-		return false;
+		return true;
 	}
 	
 	@Override

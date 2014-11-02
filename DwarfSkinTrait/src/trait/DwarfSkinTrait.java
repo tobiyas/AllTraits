@@ -193,11 +193,4 @@ public class DwarfSkinTrait extends AbstractPassiveTrait {
 		return false;
 	}
 	
-	@Override
-	public boolean checkRestrictions(EventWrapper arg0) {
-		
-		
-		return super.checkRestrictions(arg0);
-	}
-	
 }

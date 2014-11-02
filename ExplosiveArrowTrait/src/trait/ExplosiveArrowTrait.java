@@ -93,7 +93,7 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 		Player player = (Player) event.getEntity();
 		
 		arrowMap.put(arrow, player);
-		return false;
+		return true;
 	}
 
 	@Override

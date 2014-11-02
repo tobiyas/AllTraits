@@ -37,6 +37,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.TraitRestriction;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
@@ -116,7 +117,7 @@ public class PassiveAggroTrait extends AbstractBasicTrait implements Listener {
 		if(!aggroDistanceList.containsKey(monster)) return;
 		
 		Player player = (Player)(event.getTarget());
-		if(!super.checkRestrictions(EventWrapperFactory.buildOnlyWithplayer(player))) return;
+		if(super.checkRestrictions(EventWrapperFactory.buildOnlyWithplayer(player)) != TraitRestriction.None) return;
 		
 		int maxDist = aggroDistanceList.get(monster);
 		if(player.getLocation().distanceSquared(event.getTarget().getLocation()) > maxDist * maxDist) {
