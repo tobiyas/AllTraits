@@ -20,10 +20,12 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
+import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
@@ -33,6 +35,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
+import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 import de.tobiyas.racesandclasses.util.MCPrettyName;
@@ -67,6 +70,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 			forbidden += Character.toString(name.charAt(0)).toUpperCase() + name.toLowerCase().substring(1) + ", ";
 		}
 		
+		if(forbidden.isEmpty()) forbidden += " None.  ";
 		return forbidden.substring(0, forbidden.length() - 2);
 	}
 
@@ -103,7 +107,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 		}
 		
 		if(configMap.containsKey("allowNonForbidden")){
-			allowNonForbidden = (Boolean) configMap.get("allowNonForbidden");
+			allowNonForbidden = configMap.getAsBool("allowNonForbidden");
 		}
 		
 		
@@ -117,13 +121,19 @@ public class ToolTrait extends AbstractPassiveTrait{
 		if(interactingWith == null) return TraitResults.False();
 		
 		if(isOnForbidList(interactingWith)) {
-			eventWrapper.getPlayer().sendMessage(ChatColor.RED + "You may not use this Tool.");
+			Cancellable event = (Cancellable)eventWrapper.getEvent();
+			event.setCancelled(true);
+			
+			LanguageAPI.sendTranslatedMessage(eventWrapper.getPlayer(), Keys.trait_tool_trait_fail);
 			return TraitResults.False();
 		}
 		
 		
-		if(!isOnAllowList(interactingWith)) {
-			eventWrapper.getPlayer().sendMessage(ChatColor.RED + "You may not use this Tool.");
+		if(!isOnAllowList(interactingWith) && !allowNonForbidden) {
+			Cancellable event = (Cancellable)eventWrapper.getEvent();
+			event.setCancelled(true);
+			
+			LanguageAPI.sendTranslatedMessage(eventWrapper.getPlayer(), Keys.trait_tool_trait_fail);
 			return TraitResults.False();
 		}
 		

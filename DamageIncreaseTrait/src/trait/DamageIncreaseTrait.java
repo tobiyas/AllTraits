@@ -69,7 +69,8 @@ public class DamageIncreaseTrait extends AbstractPassiveTrait {
 	
 	
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
+	public TraitResults trigger(EventWrapper eventWrapper) {   
+		Event event = eventWrapper.getEvent();
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 		Entity entity = Eevent.getDamager();
 		if(entity instanceof Arrow)

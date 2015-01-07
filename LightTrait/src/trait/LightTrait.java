@@ -139,6 +139,9 @@ public class LightTrait extends AbstractContinousCostMagicSpellTrait{
 	
 	@Override
 	protected boolean deactivateIntern(RaCPlayer player){
+		if(player == null) return true;
+		if(!player.isOnline()) return true;
+		
 		//LanguageAPI.sendTranslatedMessage(player, Keys.trait_faded, "name", getDisplayName());
 		Location current = player.getLocation().clone().subtract(0, 1, 0);
 		player.getPlayer().sendBlockChange(current, current.getBlock().getType().getId(), current.getBlock().getData());

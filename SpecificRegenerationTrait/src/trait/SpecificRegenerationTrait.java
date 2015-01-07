@@ -15,6 +15,7 @@
  ******************************************************************************/
 package trait;
 
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,7 +38,6 @@ import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedExcepti
 
 public class SpecificRegenerationTrait extends TickEverySecondsTrait {
 
-	
 	
 	/**
 	 * The Damage done if set correct
@@ -126,9 +126,12 @@ public class SpecificRegenerationTrait extends TickEverySecondsTrait {
 
         return true;
 	}
+	
+	
+	private final DecimalFormat format = new DecimalFormat("0.#");
 
 	@Override
 	protected String getPrettyConfigurationPre() {
-		return "Heal";
+		return "Heals " + format.format(heal);
 	}
 }

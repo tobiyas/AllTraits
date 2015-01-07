@@ -20,13 +20,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityTargetEvent;
 
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
@@ -41,7 +39,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
-public class PassiveAggroTrait extends AbstractBasicTrait implements Listener {
+public class PassiveAggroTrait extends AbstractBasicTrait {
 	
 	/**
 	 * The List of aggro holders.
@@ -51,10 +49,11 @@ public class PassiveAggroTrait extends AbstractBasicTrait implements Listener {
 
 	@Override
 	public String getName() {
-		return "PermissionTrait";
+		return "PassiveAggroTrait";
 	}
 
 
+	@SuppressWarnings("deprecation")
 	@TraitConfigurationNeeded( fields = {
 			@TraitConfigurationField(fieldName = "aggro", classToExpect = List.class, optional = true)
 	})
@@ -72,8 +71,12 @@ public class PassiveAggroTrait extends AbstractBasicTrait implements Listener {
 				String[] split = entry.split("#");
 				if(split.length != 2) continue;
 				
-				@SuppressWarnings("deprecation")
-				EntityType type = EntityType.fromName(split[0].replace("_", "").replace(" ", ""));
+				EntityType type = null;
+				for(EntityType tmp : EntityType.values()){
+					if(type.name().equalsIgnoreCase(split[0])) type = tmp;
+				}
+
+				if(type == null) type = EntityType.fromName(split[0].replace("_", "").replace(" ", ""));
 				if(type == null) continue;
 				
 				int range = 20;
@@ -94,8 +97,8 @@ public class PassiveAggroTrait extends AbstractBasicTrait implements Listener {
 	@TraitInfos(category = "passive", traitName = "PassiveAggroTrait", visible = true)
 	@Override
 	public void importTrait() {
-		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
+	
 	
 	@Override
 	public void deInit() {
@@ -107,6 +110,8 @@ public class PassiveAggroTrait extends AbstractBasicTrait implements Listener {
 
 	@EventHandler
 	public void onAggroChange(EntityTargetEvent event){
+		System.out.println("Got event!");
+		
 		if(event.isCancelled()) return;
 		if(aggroDistanceList.isEmpty()) return;
 		

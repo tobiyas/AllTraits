@@ -82,16 +82,18 @@ public class CommandTrait extends AbstractMagicSpellTrait  {
 
 
 	@Override
-	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
+	protected void magicSpellTriggered(final RaCPlayer player, TraitResults result) {
 		
 		final String startCommandToEdit = startCommmand.replaceAll("@p", player.getName());
 		final String endCommandToEdit = endCommand.replaceAll("@p", player.getName());
-		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), startCommandToEdit);
 		
+		Bukkit.dispatchCommand(Bukkit.getConsoleSender(), startCommandToEdit);
 		Bukkit.getScheduler().scheduleSyncDelayedTask((JavaPlugin)plugin, new Runnable(){
 
 			@Override
 			public void run() {
+				if(!player.isOnline()) return;
+				
 				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), endCommandToEdit);				
 			}
 			

@@ -32,12 +32,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import de.tobiyas.racesandclasses.RacesAndClasses;
 import de.tobiyas.racesandclasses.APIs.LanguageAPI;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
+import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.TraitRestriction;
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
@@ -105,7 +107,7 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 		MagicDamageTrait otherTrait = (MagicDamageTrait) trait;
 		return cost > otherTrait.cost;
 	}
-
+	
 	
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
@@ -152,23 +154,47 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 		if(configMap.containsKey("potionType")){
 			this.potionType = configMap.getAsPotionEffectType("potionType");
 		}
-		
 	}
+	
+	
+	@Override
+	protected TraitRestriction checkForFurtherRestrictions(EventWrapper wrapper) {
+		final LivingEntity targetEntity = SearchEntity.inLineOfSight(80, wrapper.getPlayer().getPlayer());
+		if(targetEntity == null) {
+			return TraitRestriction.NoTarget;
+		}
+		
+		if(targetEntity.getLocation().distanceSquared(wrapper.getPlayer().getLocation()) > range * range){
+			return TraitRestriction.OutOfRange;
+		}
+		
+		if(EnemyChecker.areAllies(wrapper.getPlayer().getPlayer(), targetEntity)){
+			return TraitRestriction.TargetFriendly;
+		}
+		
+		
+		
+		return super.checkForFurtherRestrictions(wrapper);
+	}
+	
 	
 	@Override
 	protected void magicSpellTriggered(final RaCPlayer player, TraitResults result) {
-		final LivingEntity targetEntity = SearchEntity.inLineOfSight(range, player.getPlayer());		
+		final LivingEntity targetEntity = SearchEntity.inLineOfSight(range, player.getPlayer());
+		
 		if(targetEntity != null && 
 				EnemyChecker.areEnemies(player.getPlayer(), targetEntity)){
 			LanguageAPI.sendTranslatedMessage(player, Keys.success);
 			
 			double modDamage = modifyToPlayer(player, damage);
-			modDamage= PreEntityDamageEvent.getRealDamage(player.getPlayer(), targetEntity, DamageCause.MAGIC, modDamage);
+			final double finalModDamage = PreEntityDamageEvent.getRealDamage(player.getPlayer(), targetEntity, DamageCause.MAGIC, modDamage);
 			
 			BukkitRunnable runnable = new BukkitRunnable(){
 				@Override
 				public void run(){
-					CompatibilityModifier.LivingEntity.safeDamageEntityByEntity((LivingEntity)targetEntity, player.getPlayer(), damage);
+					if(targetEntity.isDead() || !targetEntity.isValid()) return;
+					
+					CompatibilityModifier.LivingEntity.safeDamageEntityByEntity((LivingEntity)targetEntity, player.getPlayer(), finalModDamage);
 
 					if(potionAmplifier <= 0 || potionType == null || potionDuration <= 0) return;
 					int modAmp = modifyToPlayer(player, potionAmplifier);
