@@ -45,7 +45,7 @@ public class ToolTrait extends AbstractPassiveTrait{
 	private List<Material> allowed = new LinkedList<Material>();
 	private List<Material> forbidden = new LinkedList<Material>();
 	
-	private boolean allowNonForbidden = false;
+	private boolean allowNonForbidden = true;
 	
 	public ToolTrait(){
 	}
@@ -109,9 +109,8 @@ public class ToolTrait extends AbstractPassiveTrait{
 		if(configMap.containsKey("allowNonForbidden")){
 			allowNonForbidden = configMap.getAsBool("allowNonForbidden");
 		}
-		
-		
 	}
+	
 	
 	@Override
 	public TraitResults trigger(EventWrapper eventWrapper) {   

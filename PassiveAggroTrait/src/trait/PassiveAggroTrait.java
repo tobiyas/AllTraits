@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.EntityType;
@@ -64,7 +65,6 @@ public class PassiveAggroTrait extends AbstractBasicTrait {
 		aggroDistanceList.clear();
 		if(configMap.containsKey("aggro")){
 			List<String> list = configMap.getAsStringList("aggro");
-			
 			for(String entry : list){
 				if(!entry.contains("#")) continue;
 				
@@ -73,7 +73,7 @@ public class PassiveAggroTrait extends AbstractBasicTrait {
 				
 				EntityType type = null;
 				for(EntityType tmp : EntityType.values()){
-					if(type.name().equalsIgnoreCase(split[0])) type = tmp;
+					if(tmp.name().equalsIgnoreCase(split[0])) type = tmp;
 				}
 
 				if(type == null) type = EntityType.fromName(split[0].replace("_", "").replace(" ", ""));
@@ -133,7 +133,12 @@ public class PassiveAggroTrait extends AbstractBasicTrait {
 	
 	@Override
 	protected String getPrettyConfigIntern() {
-		return "";
+		String val = "";
+		for(Entry<EntityType,Integer> entry : aggroDistanceList.entrySet()){
+			val = val + ", " + entry.getKey().name() + ": " + entry.getValue();
+		}
+		
+		return "MonsterRanges: " + (val.isEmpty() ? val : val.substring(2));
 	}
 	
 	
