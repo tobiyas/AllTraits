@@ -47,6 +47,7 @@
 		<module>RegenerationTrait</module>
 		<module>RegularDamageTrait</module>
 		<module>SpecificRegenerationTrait</module>
+		<module>SwimmingSpeedTrait</module>
 		<module>SunDamageTrait</module>
 		<module>ToolTrait</module>
 		<module>UnderwaterBreathTrait</module>

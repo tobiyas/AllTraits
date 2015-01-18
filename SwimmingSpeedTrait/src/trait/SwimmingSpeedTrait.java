@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,8 +29,10 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -45,6 +48,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
+import de.tobiyas.racesandclasses.util.inventory.InventoryResync;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 
@@ -56,6 +60,11 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 	private int level = 3;
 	
 	/**
+	 * if new Boots should be generated if not present.
+	 */
+	private boolean generateNewBootsIfNotPresent = false;
+	
+	/**
 	 * The Players with opened Inventories.
 	 */
 	private Set<UUID> playerWithOpenedInventories = new HashSet<UUID>();
@@ -65,11 +74,17 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 	 */
 	private Set<UUID> playerWithActiveEnchants = new HashSet<UUID>();
 	
+	/**
+	 * The Players with generated Boots.
+	 */
+	private Set<UUID> playerWithGeneratedBoots = new HashSet<UUID>();
+	
 	
 	@TraitEventsUsed(registerdClasses = {PlayerLoginEvent.class, HolderSelectedEvent.class})
 	@Override
 	public void generalInit() {
 		super.generalInit();
+		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 
 	@Override
@@ -95,7 +110,8 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 
 	
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(fieldName = "level", classToExpect = Integer.class, optional = true)
+			@TraitConfigurationField(fieldName = "level", classToExpect = Integer.class, optional = true),
+			@TraitConfigurationField(fieldName = "generateNewBoots", classToExpect = Boolean.class, optional = true)
 		}, removedFields = {
 			@RemoveSuperConfigField(name = "seconds")
 	})
@@ -106,6 +122,10 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 		
 		if(configMap.containsKey("level")){
 			this.level = configMap.getAsInt("level");
+		}
+		
+		if(configMap.containsKey("generateNewBoots")){
+			this.generateNewBootsIfNotPresent = configMap.getAsBool("generateNewBoots");
 		}
 	}
 
@@ -123,8 +143,7 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 		if(!canBeTriggered){
 			removeEnchant(wrapper.getPlayer());
 			playerWithActiveEnchants.remove(wrapper.getPlayer().getUniqueId());
-		}else{
-			playerWithActiveEnchants.add(wrapper.getPlayer().getUniqueId());
+			return false;
 		}
 		
 		return true;
@@ -143,6 +162,11 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 		if(boots == null || boots.getType() == Material.AIR) return;
 		
 		boots.removeEnchantment(Enchantment.DEPTH_STRIDER);
+		if(playerWithGeneratedBoots.contains(racPlayer.getUniqueId())){
+			boots = null;
+			playerWithGeneratedBoots.remove(player.getUniqueId());
+		}
+		
 		player.getInventory().setBoots(boots);
 	}
 	
@@ -157,7 +181,12 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 		Player player = racPlayer.getPlayer();
 		
 		ItemStack boots = player.getInventory().getBoots();
-		if(boots == null || boots.getType() == Material.AIR) boots = new ItemStack(Material.LEATHER_BOOTS);
+		if(boots == null || boots.getType() == Material.AIR) {
+			if(!generateNewBootsIfNotPresent) return;
+			
+			boots = new ItemStack(Material.LEATHER_BOOTS);
+			playerWithGeneratedBoots.add(player.getUniqueId());
+		}
 		
 		//if already has enchant. Remove him from the Naughty list.
 		if(boots.getEnchantmentLevel(Enchantment.DEPTH_STRIDER) > 0){
@@ -219,7 +248,10 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 		if(!racPlayer.getTraits().contains(this)) return;
 		this.playerWithOpenedInventories.add(id);
 		
-		if(playerWithActiveEnchants.contains(id)) removeEnchant(racPlayer);
+		if(playerWithActiveEnchants.contains(id)) {
+			removeEnchant(racPlayer);
+			this.playerWithActiveEnchants.remove(id);
+		}
 	}
 	
 	@EventHandler
@@ -232,6 +264,25 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 		if(racPlayer == null) return;
 		
 		this.playerWithOpenedInventories.remove(id);
+		this.playerWithActiveEnchants.remove(racPlayer.getUniqueId());
+	}
+	
+	
+	@EventHandler
+	public void playerClickBoots(InventoryClickEvent event){
+		HumanEntity player = event.getWhoClicked();
+		if(!(player instanceof Player)) return;
+		
+		UUID id = player.getUniqueId();
+		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(id);
+		if(racPlayer == null) return;
+		if(!playerWithActiveEnchants.contains(id)) return;
+		
+		if(event.getView().getType() != InventoryType.PLAYER) return;
+		if(event.getSlot() == 8 && event.getRawSlot() == 8) {
+			event.setCancelled(true);
+			InventoryResync.resync((Player) player);
+		}
 	}
 	
 	@EventHandler
@@ -244,5 +295,20 @@ public class SwimmingSpeedTrait extends TickEverySecondsTrait {
 	@Override
 	protected String getPrettyConfigurationPre() {
 		return "";
+	}
+	
+	
+	@Override
+	public void deInit() {
+		super.deInit();
+		
+		//remove ALL actives.
+		for(UUID active : playerWithActiveEnchants){
+			Player pl = Bukkit.getPlayer(active);
+			if(pl != null){
+				RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(pl);
+				removeEnchant(racPlayer);
+			}
+		}
 	}
 }
