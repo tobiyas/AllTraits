@@ -20,94 +20,28 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.inventory.ItemStack;
 
-import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
-import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
-import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
-import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
-import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.AbstractWeaponDamageIncreaseTrait;
 
-public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
+public class SwordDamageIncreaseTrait extends AbstractWeaponDamageIncreaseTrait {
 	
 	
-	@TraitEventsUsed(registerdClasses = {EntityDamageByEntityEvent.class})
-	@Override
-	public void generalInit(){
+	public SwordDamageIncreaseTrait(){
+		this.weapons.add(Material.WOOD_SWORD);
+		this.weapons.add(Material.STONE_SWORD);
+		this.weapons.add(Material.GOLD_SWORD);
+		this.weapons.add(Material.IRON_SWORD);
+		this.weapons.add(Material.DIAMOND_SWORD);
 	}
+	
 
 	@Override
 	public String getName() {
 		return "SwordDamageIncreaseTrait";
 	}
 	
-	@Override
-	protected String getPrettyConfigIntern() {
-		return "Sword damage: " + operation + " " +  value;
-	}
-
-	@TraitConfigurationNeeded( fields = {
-			@TraitConfigurationField(fieldName = "operation", classToExpect = String.class), 
-			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
-		})
-	@Override
-	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
-		super.setConfiguration(configMap);
 		
-		operation = (String) configMap.get("operation");
-		value = (Double) configMap.get("value");
-	}
-	
-	
-	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
-		if(!(event instanceof EntityDamageByEntityEvent)) return TraitResults.False();
-		
-		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
-		if(!(Eevent.getDamager() instanceof Player)) return TraitResults.False();
-		Player causer = (Player) Eevent.getDamager();
- 		
-		if(!checkItemIsSword(causer.getItemInHand())) return TraitResults.False();
-		
-		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
-		
-		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
-		return TraitResults.True();
-	}
-	
-	private boolean checkItemIsSword(ItemStack stack){
-		Material item = stack.getType();
-		if(item == Material.WOOD_SWORD)
-			return true;
-		
-		if(item == Material.STONE_SWORD)
-			return true;
-		
-		if(item == Material.GOLD_SWORD)
-			return true;
-		
-		if(item == Material.IRON_SWORD)
-			return true;
-		
-		if(item == Material.DIAMOND_SWORD)
-			return true;
-			
-		return false;
-	}
-	
-	
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
 		helpList.add(ChatColor.YELLOW + "Your Damage will be increased by a value or times an value.");
@@ -115,26 +49,9 @@ public class SwordDamageIncreaseTrait extends AbstractPassiveTrait {
 	}
 	
 	
-	@Override
-	public boolean isBetterThan(Trait trait) {
-		if(!(trait instanceof SwordDamageIncreaseTrait)) return false;
-		SwordDamageIncreaseTrait otherTrait = (SwordDamageIncreaseTrait) trait;
-		
-		return value >= otherTrait.value;
-	}
-	
 	@TraitInfos(category="passive", traitName="SwordDamageIncreaseTrait", visible=true)
 	@Override
 	public void importTrait() {
-	}
-
-	@Override
-	public boolean canBeTriggered(EventWrapper wrapper) {
-		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
-		
-		RaCPlayer causer = wrapper.getPlayer(); 		
-		if(!checkItemIsSword(causer.getPlayer().getItemInHand())) return false;
-		return true;
 	}
 
 }

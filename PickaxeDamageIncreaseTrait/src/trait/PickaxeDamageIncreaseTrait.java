@@ -20,34 +20,21 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.inventory.ItemStack;
 
-import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
-import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.PlayerAction;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
-import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
-import de.tobiyas.racesandclasses.traitcontainer.traits.passive.AbstractPassiveTrait;
-import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
-import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
-import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.AbstractWeaponDamageIncreaseTrait;
 
-public class PickaxeDamageIncreaseTrait extends AbstractPassiveTrait{
+public class PickaxeDamageIncreaseTrait extends AbstractWeaponDamageIncreaseTrait{
 	
 	
 	public PickaxeDamageIncreaseTrait(){
+		this.weapons.add(Material.WOOD_PICKAXE);
+		this.weapons.add(Material.STONE_PICKAXE);
+		this.weapons.add(Material.GOLD_PICKAXE);
+		this.weapons.add(Material.IRON_PICKAXE);
+		this.weapons.add(Material.DIAMOND_PICKAXE);
 	}
-	
-	@TraitEventsUsed(registerdClasses = {EntityDamageByEntityEvent.class})
-	@Override
-	public void generalInit(){
-	}
+
 
 	@Override
 	public String getName() {
@@ -55,77 +42,16 @@ public class PickaxeDamageIncreaseTrait extends AbstractPassiveTrait{
 	}
 
 
-	@Override
-	protected String getPrettyConfigIntern(){
-		return operation + " " +  value;
-	}
-
-	@TraitConfigurationNeeded( fields = {
-			@TraitConfigurationField(fieldName = "operation", classToExpect = String.class), 
-			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
-		})
-	@Override
-	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
-		super.setConfiguration(configMap);
-		operation = (String) configMap.get("operation");
-		value = (Double) configMap.get("value");
-	}
-	
-	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
-		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
-		double newValue = getNewValue(eventWrapper.getPlayer(), Eevent.getDamage());
-		
-		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
-		return TraitResults.True();
-	}
-	
-	private boolean checkItemIsPickaxe(ItemStack stack){
-		Material item = stack.getType();
-		if(item == Material.WOOD_PICKAXE)
-			return true;
-		
-		if(item == Material.STONE_PICKAXE)
-			return true;
-		
-		if(item == Material.GOLD_PICKAXE)
-			return true;
-		
-		if(item == Material.IRON_PICKAXE)
-			return true;
-		
-		if(item == Material.DIAMOND_PICKAXE)
-			return true;
-			
-		return false;
-	}
-
-	@Override
-	public boolean isBetterThan(Trait trait) {
-		if(!(trait instanceof PickaxeDamageIncreaseTrait)) return false;
-		PickaxeDamageIncreaseTrait otherTrait = (PickaxeDamageIncreaseTrait) trait;
-		
-		return value >= otherTrait.value;
-	}
-
 	@TraitInfos(category="passive", traitName="PickaxeDamageIncreaseTrait", visible=true)
 	@Override
 	public void importTrait() {
 	}
+	
 	
 	public static List<String> getHelpForTrait(){
 		List<String> helpList = new LinkedList<String>();
 		helpList.add(ChatColor.YELLOW + "The trait increases the Damage of your Pickaxe.");
 		return helpList;
 	}
-
-	@Override
-	public boolean canBeTriggered(EventWrapper wrapper) {
-		if(wrapper.getPlayerAction() != PlayerAction.DO_DAMAGE) return false;
-		
-		RaCPlayer causer = wrapper.getPlayer(); 		
-		if(!checkItemIsPickaxe(causer.getPlayer().getItemInHand())) return false;
-		return true;
-	}	
 	
 }
