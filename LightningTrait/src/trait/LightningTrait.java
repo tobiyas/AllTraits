@@ -15,6 +15,7 @@
  ******************************************************************************/
 package trait;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -99,7 +100,7 @@ public class LightningTrait extends AbstractMagicSpellTrait  {
 	@Override
 	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
 		@SuppressWarnings("deprecation")
-		Block toStrikeOn = player.getPlayer().getTargetBlock(null, 100);
+		Block toStrikeOn = player.getPlayer().getTargetBlock((HashSet<Byte>)null, 100);
 		if(toStrikeOn == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);
 			result.setTriggered(false);

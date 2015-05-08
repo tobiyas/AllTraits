@@ -24,6 +24,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -91,7 +92,7 @@ public class MiningSpeedTrait extends AbstractPassiveTrait{
 		blocksToVerify.clear();
 		@SuppressWarnings("unchecked")
 		List<String> blockList = (List<String>) configMap.get("blocks");
-		if(blockList == null){
+		if(blockList == null || blockList.isEmpty()){
 			for(Material mat : Material.values()){
 				if(mat.isBlock()){
 					blocksToVerify.add(mat);

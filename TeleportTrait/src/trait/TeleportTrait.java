@@ -15,6 +15,7 @@
  ******************************************************************************/
 package trait;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -75,7 +76,7 @@ public class TeleportTrait extends AbstractMagicSpellTrait  {
 
 	@Override
 	protected void magicSpellTriggered(RaCPlayer player, TraitResults result) {
-		Block toTeleportTo = player.getPlayer().getTargetBlock(null, 100);
+		Block toTeleportTo = player.getPlayer().getTargetBlock((HashSet<Byte>)null, 100);
 		
 		if(toTeleportTo == null){
 			LanguageAPI.sendTranslatedMessage(player, Keys.no_taget_found);

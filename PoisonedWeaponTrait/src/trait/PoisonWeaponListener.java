@@ -36,7 +36,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import de.tobiyas.racesandclasses.RacesAndClasses;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
@@ -82,7 +81,9 @@ public class PoisonWeaponListener implements Listener{
 			Material.STONE_PICKAXE,
 			Material.GOLD_PICKAXE,
 			Material.IRON_PICKAXE,
-			Material.DIAMOND_PICKAXE
+			Material.DIAMOND_PICKAXE,
+			
+			Material.SHEARS
 			));
 	
 	
@@ -93,7 +94,7 @@ public class PoisonWeaponListener implements Listener{
 		PoisonItem = poisonMaterial;
 	
 		initRecipes();
-		Bukkit.getPluginManager().registerEvents(this, (JavaPlugin)RacesAndClasses.getPlugin());
+		RacesAndClasses.getPlugin().registerEvents(this);
 	}
 	
 	
@@ -140,6 +141,10 @@ public class PoisonWeaponListener implements Listener{
 			}
 		}
 		
+	}
+	
+	public void shutdown(){
+		deregister();
 		HandlerList.unregisterAll(this);
 	}
 	
@@ -231,4 +236,17 @@ public class PoisonWeaponListener implements Listener{
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 	}
+
+	
+	/**
+	 * Sets the new Material.
+	 * 
+	 * @param newMat to set
+	 */
+	public void setMat(Material newMat){
+		deregister();
+		PoisonItem = newMat;
+		initRecipes();
+	}
+	
 }

@@ -50,7 +50,8 @@ import de.tobiyas.racesandclasses.util.traitutil.TraitPriority;
 public class LastStandTrait extends AbstractPassiveTrait  {
 	
 	private static double activationLimit = 30;
-	private double value;
+	private double value = 5;
+	private final DecimalFormat format = new DecimalFormat("0.0");
 	
 	public LastStandTrait(){
 	}
@@ -73,18 +74,20 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 	
 	@Override
 	protected String getPrettyConfigIntern(){
-		DecimalFormat format = new DecimalFormat("0.0");
 		return " uplink-Time: " + cooldownTime + " secs, heals: " + format.format(value);
 	}
 
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
+			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class, optional = true),
+			@TraitConfigurationField(fieldName = "activationLimit", classToExpect = Double.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		value = (Double) configMap.get("value");
+		if(configMap.containsKey("value")){
+			value = configMap.getAsDouble("value");
+		}
 	}
 
 	@Override
@@ -120,7 +123,7 @@ public class LastStandTrait extends AbstractPassiveTrait  {
 				
 				LanguageAPI.sendTranslatedMessage(player, Keys.trait_laststand_success, 
 						"name", getDisplayName(), 
-						"value", String.valueOf(amount));
+						"value", format.format(amount));
 				
 				Location loc = player.getLocation();
 				player.getWorld().playEffect(loc, Effect.POTION_BREAK, 1);

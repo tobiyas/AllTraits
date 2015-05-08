@@ -57,7 +57,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	private double chance = 0.20;
 	private int applications = 0;
 	
-	private Material poinsonMaterial = Material.RED_ROSE;
+	private Material poisonMaterial = Material.RED_ROSE;
 	
 	private Random rand = new SecureRandom();
 	
@@ -66,7 +66,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	@TraitEventsUsed(registerdClasses = {EntityDamageByEntityEvent.class})
 	@Override
 	public void generalInit(){
-		listener = new PoisonWeaponListener(this, applications, poinsonMaterial);
+		listener = new PoisonWeaponListener(this, applications, poisonMaterial);
 	}
 	
 
@@ -74,7 +74,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	public void deInit() {
 		super.deInit();
 		
-		listener.deregister();
+		listener.shutdown();
 		listener = null;
 	}
 
@@ -90,7 +90,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	}
 
 	@TraitConfigurationNeeded( fields = {
-			@TraitConfigurationField(fieldName = "duration", classToExpect = Double.class, optional = false), 
+			@TraitConfigurationField(fieldName = "duration", classToExpect = Double.class, optional = false),
 			@TraitConfigurationField(fieldName = "totaldamage", classToExpect = Double.class, optional = false),
 			@TraitConfigurationField(fieldName = "applications", classToExpect = Integer.class, optional = false),
 			@TraitConfigurationField(fieldName = "chance", classToExpect = Double.class, optional = true),
@@ -98,26 +98,26 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
-
 		super.setConfiguration(configMap);
 		
-		seconds = (Double) configMap.get("duration");
-		totalDamage = (Double) configMap.get("totaldamage");
+		seconds = configMap.getAsDouble("duration");
+		totalDamage = configMap.getAsDouble("totaldamage");
 		
-		applications = (Integer) configMap.get("applications");
+		applications = configMap.getAsInt("applications");
 		
 		if(configMap.containsKey("chance")){
-			chance = (Double) configMap.get("chance");
+			chance = configMap.getAsDouble("chance");
 		}
 
 		if(configMap.containsKey("poisonMaterial")){
-			poinsonMaterial = (Material) configMap.get("poisonMaterial");
+			poisonMaterial = configMap.getAsMaterial("poisonMaterial");
+			PoisonWeaponListener.PoisonItem = poisonMaterial;
 		}
 	}
 	
 	
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   
+	public TraitResults trigger(EventWrapper eventWrapper) {
 		Event event = eventWrapper.getEvent();
 		if(!(event instanceof EntityDamageByEntityEvent)) return TraitResults.False();
 		

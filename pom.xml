@@ -114,6 +114,7 @@
 		<module>ThrowItemsAroundSpellTrait</module>
 		<module>WallTrait</module>
 		<module>WeaponNextHitDamageIncreaseBuffTrait</module>
+		<module>WeaponNextHitDebuffTrait</module>
 		
 		<!-- Totems -->
 		<module>HealTotemTrait</module>

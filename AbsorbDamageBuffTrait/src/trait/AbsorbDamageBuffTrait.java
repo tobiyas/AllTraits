@@ -26,6 +26,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
@@ -89,7 +90,6 @@ public class AbsorbDamageBuffTrait extends AbstractBuffTrait{
 		List<String> typeNames = configMap.getAsStringList("types");
 		for(String type : typeNames){
 			if(type.equalsIgnoreCase("all")) for(DamageCause cause : DamageCause.values()) types.add(cause);
-			
 			DamageCause cause = null;
 			try{ cause = DamageCause.valueOf(type.toUpperCase()); }catch(IllegalArgumentException exp){}
 			if(cause != null) this.types.add(cause);
@@ -117,7 +117,7 @@ public class AbsorbDamageBuffTrait extends AbstractBuffTrait{
 		return helpList;
 	}
 
-	@EventHandler
+	@EventHandler(priority=EventPriority.HIGH)
 	public void entityDamage(EntityDamageByEntityEvent event){
 		if(!types.contains(event.getCause())) return;
 		
@@ -149,7 +149,8 @@ public class AbsorbDamageBuffTrait extends AbstractBuffTrait{
 	
 	@Override
 	protected void buffActivated(RaCPlayer player) {
-		absorbMap.put(player, value);
+		double modified = modifyToPlayer(player, value);
+		absorbMap.put(player, modified);
 	}
 
 	@Override

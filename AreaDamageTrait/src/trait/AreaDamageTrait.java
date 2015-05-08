@@ -27,7 +27,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import de.tobiyas.racesandclasses.RacesAndClasses;
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
@@ -104,6 +103,7 @@ public class AreaDamageTrait extends AbstractActivateAETrait {
 		if(configMap.containsKey("particleFromSelf")){
 			particlesFromSelf = configMap.getAsParticleContainer("particleFromSelf");
 		}
+		
 	}
 
 	public static List<String> getHelpForTrait(){
@@ -146,12 +146,11 @@ public class AreaDamageTrait extends AbstractActivateAETrait {
 			}
 		};
 		
-		
+		int later = 0;
 		if(particles != null) {
 			if(showLine){
 				int maxTimeToTake = 20;
 				final Queue<Location> onTheWay = SearchEntity.getAllOnWay(player.getLocation(), otherEntity.getLocation());
-				System.out.println("QueueSize: " + onTheWay.size());
 				int ticks = maxTimeToTake / onTheWay.size();
 				
 				new BukkitRunnable(){
@@ -168,14 +167,14 @@ public class AreaDamageTrait extends AbstractActivateAETrait {
 								next);
 					}
 				}.runTaskTimer((Plugin)plugin, ticks, ticks);
-				runnable.runTaskLater((Plugin) RacesAndClasses.getPlugin(), 20);
-				
+				later = 20;
 				
 			}else {
 				Vollotile.get().sendOwnParticleEffectToAll(particles, otherEntity.getLocation());
-				runnable.run();
 			}
 		}
+		
+		runnable.runTaskLater(plugin, later);
 		
 		if(particlesFromSelf != null) Vollotile.get().sendOwnParticleEffectToAll(particlesFromSelf, player.getLocation());
 		return true;
@@ -184,7 +183,7 @@ public class AreaDamageTrait extends AbstractActivateAETrait {
 
 	@Override
 	protected String getPrettyConfigIntern() {
-		return "Does damage on Stuff around.";
+		return "Does " + damage + " damage on Enemies around you.";
 	}
 
 }
