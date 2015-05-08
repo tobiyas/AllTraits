@@ -41,6 +41,7 @@
 		<module>MovementSpeedTrait</module>
 		<module>NightDamageTrait</module>
 		<module>PassiveAggroTrait</module>
+		<module>PermanentEnchantTrait</module>
 		<module>PermanentPotionTrait</module>
 		<module>PermissionTrait</module>
 		<module>PoisonedWeaponTrait</module>
@@ -61,6 +62,7 @@
 		<module>ShovelDamageIncreaseTrait</module>
 		<module>StickDamageIncreaseTrait</module>
 		<module>SwordDamageIncreaseTrait</module>
+		<module>SpecificWeaponDamageIncreaseTrait</module>
 		
 		
 		<!-- arrows -->
