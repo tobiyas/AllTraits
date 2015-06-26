@@ -44,9 +44,9 @@ import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedExcepti
 
 public class CobWebArrowTrait extends AbstractArrow implements Listener {
 	
-	private int range;
+	private int range = 3;
 	
-	private int seconds;
+	private int seconds = 5;
 	
 	
 	
@@ -73,15 +73,15 @@ public class CobWebArrowTrait extends AbstractArrow implements Listener {
 	
 	
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(fieldName = "range", classToExpect = Integer.class, optional = false),
-			@TraitConfigurationField(fieldName = "time", classToExpect = Integer.class, optional = false)
+			@TraitConfigurationField(fieldName = "range", classToExpect = Integer.class, optional = true),
+			@TraitConfigurationField(fieldName = "time", classToExpect = Integer.class, optional = true)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		range = (Integer) configMap.get("range");
-		seconds = (Integer) configMap.get("time");
+		if(configMap.containsKey("range")) range = configMap.getAsInt("range");
+		if(configMap.containsKey("time")) seconds = configMap.getAsInt("time");
 	}
 
 	

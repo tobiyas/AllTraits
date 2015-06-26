@@ -131,7 +131,7 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_consume_success,
 				"value", String.valueOf(newValue), "material", materialForCasting.name());
 		
-		result.setTriggered(false);
+		result.setTriggered(true).setRemoveCostsAfterTrigger(true);
 		return;
 	}
 
