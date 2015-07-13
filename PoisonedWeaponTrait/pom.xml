@@ -32,7 +32,7 @@
       <dependency>
           <groupId>de.tobiyas</groupId>
           <artifactId>RacesAndClasses</artifactId>
-          <version>1.1.5-SNAPSHOT</version>
+          <version>1.1.7-SNAPSHOT</version>
           <optional>true</optional>
       </dependency>
       
@@ -40,7 +40,7 @@
   	  <dependency>
   		  <groupId>org.bukkit</groupId>
   		  <artifactId>bukkit</artifactId>
-  		   <version>1.8.3-R0.1-SNAPSHOT</version>
+  		   <version>1.8.7-R0.1-SNAPSHOT</version>
   		  <optional>true</optional>
   	  </dependency>
   	  
