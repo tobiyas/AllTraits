@@ -43,7 +43,6 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.traitcontainer.traits.magic.AbstractMagicSpellTrait;
 import de.tobiyas.racesandclasses.translation.languages.Keys;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
-import de.tobiyas.racesandclasses.util.damage.PreEntityDamageEvent;
 import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
 import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
@@ -172,8 +171,6 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 			return TraitRestriction.TargetFriendly;
 		}
 		
-		
-		
 		return super.checkForFurtherRestrictions(wrapper);
 	}
 	
@@ -186,15 +183,12 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 				EnemyChecker.areEnemies(player.getPlayer(), targetEntity)){
 			LanguageAPI.sendTranslatedMessage(player, Keys.success);
 			
-			double modDamage = modifyToPlayer(player, damage);
-			final double finalModDamage = PreEntityDamageEvent.getRealDamage(player.getPlayer(), targetEntity, DamageCause.MAGIC, modDamage);
-			
+			final double modDamage = modifyToPlayer(player, damage);
 			BukkitRunnable runnable = new BukkitRunnable(){
 				@Override
 				public void run(){
 					if(targetEntity.isDead() || !targetEntity.isValid()) return;
-					
-					CompatibilityModifier.LivingEntity.safeDamageEntityByEntity((LivingEntity)targetEntity, player.getPlayer(), finalModDamage);
+					CompatibilityModifier.LivingEntity.safeDamageEntityByEntity((LivingEntity)targetEntity, player.getPlayer(), modDamage, DamageCause.MAGIC);
 
 					if(potionAmplifier <= 0 || potionType == null || potionDuration <= 0) return;
 					int modAmp = modifyToPlayer(player, potionAmplifier);

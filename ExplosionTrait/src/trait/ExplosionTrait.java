@@ -17,13 +17,16 @@ package trait;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
@@ -131,10 +134,14 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 		double modDamage = modifyToPlayer(player, damage);
 		
 		if(explode){
+			lastCaster = player.getUniqueId();
 			if(location.getWorld().createExplosion(location, (float) modDamage)){
 				result.setTriggered(true);
+				lastCaster = null;
 				return;
 			}
+			
+			lastCaster = null;
 		}
 		
 		List<LivingEntity> entities = getNearbyEntities(location, range);
@@ -145,7 +152,10 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 			
 			EntityDamageByEntityEvent damageEvent = CompatibilityModifier.EntityDamageByEntity.
 					safeCreateEvent(player.getPlayer(), entity, DamageCause.ENTITY_EXPLOSION, modDamage);
+			
+			lastCaster = player.getUniqueId();
 			plugin.fireEventToBukkit(damageEvent);
+			lastCaster = null;
 			
 			double newDamage = CompatibilityModifier.EntityDamage.safeGetDamage(damageEvent);
 			if(!damageEvent.isCancelled() && newDamage > 0){
@@ -156,6 +166,19 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 		
 		result.setTriggered(true);
 	}
+	
+	
+	
+	private UUID lastCaster;
+	
+	
+	@EventHandler
+	public void onDamage(EntityDamageEvent event){
+		if(lastCaster == null) return;
+		
+		if(event.getEntity().getUniqueId().equals(lastCaster)) event.setCancelled(true);
+	}
+	
 	
 	/**
 	 * Gets all Entities in a radius of the location.
