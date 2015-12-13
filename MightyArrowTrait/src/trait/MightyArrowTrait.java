@@ -20,8 +20,10 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
@@ -34,6 +36,7 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitEventsUsed;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
 import de.tobiyas.racesandclasses.traitcontainer.traits.arrows.AbstractArrow;
+import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier;
 import de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier.EntityDamage;
 import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
@@ -85,14 +88,21 @@ public class MightyArrowTrait extends AbstractArrow {
 		Entity hitTarget = event.getEntity();
 		if(!(hitTarget instanceof LivingEntity)) return false;
 		
+		
+		Entity shooterEntity = event.getDamager();
+		if(shooterEntity instanceof Projectile) {
+			shooterEntity = CompatibilityModifier.Shooter.getShooter((Projectile)shooterEntity);
+		}
+		
+		if(shooterEntity.getType() != EntityType.PLAYER) return false;
 		if(!EnemyChecker.areEnemies(event.getDamager(), hitTarget)) return false;
 		
-		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player)event.getDamager());
+		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player) shooterEntity);
 		double modDamage = modifyToPlayer(shooter, additionalDamage);
 		
 		double newDamage = modDamage + EntityDamage.safeGetDamage(event);
 		EntityDamage.safeSetDamage(newDamage, event);
-		return true;
+		return false;
 	}
 
 	@Override

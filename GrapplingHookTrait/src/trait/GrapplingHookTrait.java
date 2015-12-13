@@ -16,9 +16,12 @@
 package trait;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,14 +31,17 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
+import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapper;
+import de.tobiyas.racesandclasses.eventprocessing.eventresolvage.EventWrapperFactory;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.AbstractBasicTrait;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.TraitResults;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
@@ -45,16 +51,18 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Trait;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.util.RaC.schedule.DebugBukkitRunnable;
 
 public class GrapplingHookTrait extends AbstractBasicTrait{
 	
 	private Material materialToUse = Material.ARROW;
 	
-	private Map<Projectile, String> launchMap = new HashMap<Projectile, String>();
+	private final Map<Projectile, UUID> launchMap = new HashMap<Projectile, UUID>();
 	
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEvent.class, ProjectileHitEvent.class})
 	@Override
 	public void generalInit(){
+		plugin.registerEvents(this);
 	}
 
 	@Override
@@ -75,18 +83,19 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		materialToUse = (Material) configMap.get("material");
+		materialToUse = configMap.getAsMaterial("material");
 	}
 	
 
 	@Override
-	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
+	public TraitResults trigger(EventWrapper eventWrapper) {   
+		Event event = eventWrapper.getEvent();
 		if(event instanceof PlayerInteractEvent){
 			PlayerInteractEvent Eevent = (PlayerInteractEvent) event;
 			Player player = Eevent.getPlayer();
 			
 			Arrow projectile = player.launchProjectile(Arrow.class);
-			launchMap.put(projectile, player.getName());
+			launchMap.put(projectile, player.getUniqueId());
 			return TraitResults.True();
 		}
 		
@@ -99,33 +108,105 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 			launchMap.remove(projectile);
 			projectile.remove();
 
-			pullPlayerTo(player, projectile.getLocation());
+			//Only if online!
+			if(player.isOnline()) pullPlayerTo(player, projectile.getLocation());
 		}
 		
 		return TraitResults.True();
 	}
 	
 	
+	/**
+	 * The Set of pulling people.
+	 */
+	private Set<UUID> pulling = new HashSet<>();
+	
+	/**
+	 * If currently teleporting.
+	 */
+	private boolean isGrapplingTeleport = false;
+	
+	
+	@EventHandler
+	public void playerMove(PlayerMoveEvent event){
+		if(isGrapplingTeleport) return;
+		if(event.getFrom().distance(event.getTo()) < 0.1) return;
+		
+		Player player = event.getPlayer();
+		if(pulling.contains(player.getUniqueId())) {
+			event.setCancelled(true);
+		}
+	}
+	
+	
 	private void pullPlayerTo(final Player player, final Location location) {
-		BukkitRunnable runnable = new BukkitRunnable() {
+		final boolean isFlying = player.isFlying();
+		final boolean allowFlying = player.getAllowFlight();
+		if(!isFlying) { player.setFlying(true); player.setAllowFlight(true);}
+		pulling.add(player.getUniqueId());
+		
+		
+		BukkitRunnable runnable = new DebugBukkitRunnable("GrapplingHookPull") {
+			int i = 0;
+			double dist = 100000;
 			
 			@Override
-			public void run() {
-				Location playerLocation = player.getLocation();
-				if(playerLocation.distance(location) < 0.4 || launchMap.values().contains(player.getName())){
-					cancel();
+			public void runIntern() {
+				//Have a safety abort:
+				if(i++>100) {stopIt(); return;}
+				
+				
+				//If gone offline -> set flying false!
+				if(!player.isOnline() || player.isDead()) {
+					stopIt();
+					return;
 				}
 				
-				Vector vec = location.getDirection().subtract(playerLocation.getDirection());
-				vec.normalize().multiply(0.4);
+				//Check if near enough:
+				Location playerLocation = player.getLocation();
+				double curDist = playerLocation.distance(location);
+				if(Math.abs(curDist - dist) < 0.4){
+					stopIt();
+					return;
+				}
 				
+				dist = curDist;
+				if(playerLocation.distance(location) < 1 || launchMap.values().contains(player.getName())){
+					stopIt();
+					return;
+				}
+				
+				//Calculate the Direction:
+				Vector vec = location.toVector().subtract(playerLocation.toVector());
+				vec.normalize().multiply(1.4);
+				
+				//Now check to be sure to not get into a solid block:
 				Location teleportLocation = playerLocation.add(vec);
+				Location up = teleportLocation.clone().add(0,2,0);
+				if(up.getBlock().getType().isSolid()){
+					//We will never go into a solid block!
+					stopIt();
+					return;
+				}
+				
+				//Finally teleport.
+				isGrapplingTeleport = true;
 				player.teleport(teleportLocation);
+				isGrapplingTeleport = false;
+				
+				player.setFlying(true);
+			}
+			
+			private void stopIt(){
+				pulling.remove(player.getUniqueId());
+				cancel();
+				
+				try{ if(!isFlying) player.setFlying(false); }catch(Throwable exp){}
+				try{ if(!allowFlying) player.setAllowFlight(false); }catch(Throwable exp){}
 			}
 		};
 		
-		Bukkit.getScheduler().scheduleSyncRepeatingTask((JavaPlugin)plugin, runnable, 5, 5);
-	
+		runnable.runTaskTimer(plugin, 2, 2);
 	}
 
 	public static List<String> getHelpForTrait(){
@@ -163,6 +244,19 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 		}
 		
 		return false;
+	}
+	
+	
+	@Override
+	public boolean isBindable() {
+		return true;
+	}
+	
+	
+	@Override
+	protected TraitResults bindCastIntern(RaCPlayer player) {
+		EventWrapper event = EventWrapperFactory.buildFromEvent(new PlayerInteractEvent(player.getPlayer(), null, null, null, null));
+		return trigger(event);
 	}
 	
 }

@@ -23,6 +23,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
@@ -89,7 +90,7 @@ public class PoisonArrowTrait extends AbstractArrow {
 		if(EnemyChecker.areAllies(event.getDamager(), hitTarget)) return false;
 		
 		Entity damager = event.getDamager();
-		if(damager instanceof Arrow) damager = (Entity) CompatibilityModifier.Shooter.getShooter((Arrow) damager);
+		if(damager instanceof Arrow) damager = (Entity) CompatibilityModifier.Shooter.getShooter((Projectile) damager);
 		
 		if(!(damager instanceof Player)) return false;
 		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player) damager);
@@ -97,7 +98,7 @@ public class PoisonArrowTrait extends AbstractArrow {
 		double damagePerTick = modifyToPlayer(shooter, totalDamage) / duration;
 		DamageTicker ticker = new DamageTicker((LivingEntity) hitTarget, duration, damagePerTick, DamageCause.POISON, event.getDamager());
 		ticker.linkPotionEffect(PotionEffectTypeWrapper.POISON.createEffect(duration, 0));
-		return true;
+		return false;
 	}
 
 	@Override
