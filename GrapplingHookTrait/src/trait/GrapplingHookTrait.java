@@ -36,6 +36,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -52,6 +53,8 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.Tra
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 import de.tobiyas.util.RaC.schedule.DebugBukkitRunnable;
+import de.tobiyas.util.RaC.vollotile.ParticleEffects;
+import de.tobiyas.util.RaC.vollotile.VollotileCodeManager;
 
 public class GrapplingHookTrait extends AbstractBasicTrait{
 	
@@ -94,6 +97,9 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 			PlayerInteractEvent Eevent = (PlayerInteractEvent) event;
 			Player player = Eevent.getPlayer();
 			
+			//If pulling -> return.
+			if(pulling.contains(player.getUniqueId())) return TraitResults.False();
+			
 			Arrow projectile = player.launchProjectile(Arrow.class);
 			launchMap.put(projectile, player.getUniqueId());
 			return TraitResults.True();
@@ -107,6 +113,9 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 			
 			launchMap.remove(projectile);
 			projectile.remove();
+			
+			//Just sanity Check.
+			if(pulling.contains(player.getUniqueId())) return TraitResults.False();
 
 			//Only if online!
 			if(player.isOnline()) pullPlayerTo(player, projectile.getLocation());
@@ -135,6 +144,18 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 		Player player = event.getPlayer();
 		if(pulling.contains(player.getUniqueId())) {
 			event.setCancelled(true);
+		}
+	}
+	
+	
+	@EventHandler
+	public void playerLeave(PlayerQuitEvent event){
+		Player pl = event.getPlayer();
+		
+		//Small quickfix for Leaving players still have fly.
+		if(pulling.contains(pl.getUniqueId())){
+			pl.setAllowFlight(false);
+			pl.setFlying(false);
 		}
 	}
 	
@@ -195,6 +216,15 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 				isGrapplingTeleport = false;
 				
 				player.setFlying(true);
+				
+				//every 4th tick -> do fancy particles.
+				if(i % 2 == 0){
+					List<Location> between = getBetween(playerLocation, location, 10);
+					for(Location loc : between){
+						VollotileCodeManager.getVollotileCode().sendParticleEffectToAll(
+								ParticleEffects.CRIT, loc, new Vector(0,0,0), 0, 3);
+					}
+				}
 			}
 			
 			private void stopIt(){
@@ -203,6 +233,22 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 				
 				try{ if(!isFlying) player.setFlying(false); }catch(Throwable exp){}
 				try{ if(!allowFlying) player.setAllowFlight(false); }catch(Throwable exp){}
+			}
+			
+			
+			private List<Location> getBetween(Location start, Location end, int amount){
+				start = start.clone();
+				end = end.clone();
+				
+				Vector vec = end.toVector().subtract(start.toVector());
+				vec = vec.divide(new Vector(amount,amount,amount));
+				List<Location> locs = new LinkedList<Location>();
+				for(int i = 1; i < amount; i++){
+					start.add(vec);
+					locs.add(start.clone());
+				}
+				
+				return locs;
 			}
 		};
 		
@@ -231,8 +277,14 @@ public class GrapplingHookTrait extends AbstractBasicTrait{
 		if(event instanceof PlayerInteractEvent){
 			PlayerInteractEvent Eevent = (PlayerInteractEvent) event;
 			Player player = Eevent.getPlayer();
+			UUID id = player.getUniqueId();
+			
 			if(player.getItemInHand().getType() == materialToUse
-					&& Eevent.getAction() == Action.RIGHT_CLICK_AIR) return true;
+					&& Eevent.getAction() == Action.RIGHT_CLICK_AIR
+					&& !launchMap.values().contains(id)
+					&& !pulling.contains(id)) {
+				return true;
+			}
 		}
 		
 		if(event instanceof ProjectileHitEvent){
