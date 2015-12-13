@@ -55,7 +55,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	private double totalDamage = 0;
 	
 	private double chance = 0.20;
-	private int applications = 0;
+	private int applications = 10;
 	
 	private Material poisonMaterial = Material.RED_ROSE;
 	
@@ -92,7 +92,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 	@TraitConfigurationNeeded( fields = {
 			@TraitConfigurationField(fieldName = "duration", classToExpect = Double.class, optional = false),
 			@TraitConfigurationField(fieldName = "totaldamage", classToExpect = Double.class, optional = false),
-			@TraitConfigurationField(fieldName = "applications", classToExpect = Integer.class, optional = false),
+			@TraitConfigurationField(fieldName = "applications", classToExpect = Integer.class, optional = true),
 			@TraitConfigurationField(fieldName = "chance", classToExpect = Double.class, optional = true),
 			@TraitConfigurationField(fieldName = "poisonMaterial", classToExpect = Material.class, optional = true)
 		})
@@ -103,7 +103,9 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 		seconds = configMap.getAsDouble("duration");
 		totalDamage = configMap.getAsDouble("totaldamage");
 		
-		applications = configMap.getAsInt("applications");
+		if(configMap.containsKey("applications")){
+			applications = configMap.getAsInt("applications");
+		}
 		
 		if(configMap.containsKey("chance")){
 			chance = configMap.getAsDouble("chance");
