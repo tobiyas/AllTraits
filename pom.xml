@@ -94,6 +94,7 @@
 		<!-- magic -->
 		<module>AbsorbDamageBuffTrait</module>
 		<module>AreaAirDropSpellTrait</module>
+		<module>BlockDisguiseTrait</module>
 		<module>ColdFeetTrait</module>
 		<module>CommandTrait</module>
 		<module>ExplosionTrait</module>
