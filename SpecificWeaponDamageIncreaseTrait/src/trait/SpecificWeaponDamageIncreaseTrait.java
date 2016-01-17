@@ -70,7 +70,6 @@ public class SpecificWeaponDamageIncreaseTrait extends AbstractWeaponDamageIncre
 	
 	@TraitInfos(category="passive", traitName="SpecificWeaponDamageIncreaseTrait", visible=true)
 	@Override
-	public void importTrait() {
-	}
+	public void importTrait() {}
 
 }

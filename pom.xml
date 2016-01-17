@@ -39,6 +39,7 @@
 		<module>LastStandTrait</module>
 		<module>ManaRegenerationTrait</module>
 		<module>MiningSpeedTrait</module>
+		<module>MonsterDropItemTrait</module>
 		<module>MovementSpeedTrait</module>
 		<module>NightDamageTrait</module>
 		<module>NoHungerTrait</module>

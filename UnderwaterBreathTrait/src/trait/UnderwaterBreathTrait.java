@@ -50,7 +50,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 	/**
 	 * The New time to stay underwater
 	 */
-	private int newTime = DEFAULT_BREATH_TIME;
+	private int newTimeInTicks = DEFAULT_BREATH_TIME;
 	
 	/**
 	 * The Current ticks for the players
@@ -83,7 +83,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 		if(!(trait instanceof UnderwaterBreathTrait)) return false;
 		UnderwaterBreathTrait otherTrait = (UnderwaterBreathTrait) trait;
 		
-		return this.newTime >= otherTrait.newTime;
+		return this.newTimeInTicks >= otherTrait.newTimeInTicks;
 	}
 
 	
@@ -99,7 +99,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 		super.setConfiguration(configMap);
 		
 		if(configMap.containsKey("time")){
-			newTime = 20 * (Integer) configMap.get("time");
+			newTimeInTicks = 20 * (Integer) configMap.get("time");
 		}
 	}
 
@@ -128,7 +128,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 			AirStorage storage = new AirStorage();
 			storage.currentScaledAir = currentBreath;
 			
-			storage.currentRawAir = currentBreath * (newTime / DEFAULT_BREATH_TIME);
+			storage.currentRawAir = currentBreath * (newTimeInTicks / DEFAULT_BREATH_TIME);
 			currentTicks.put(playerName, storage);
 		}
 		
@@ -139,8 +139,8 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 		//AIR has changed.
 		if(changeRatio > 0){
 			//Air has increased.
-			playerStorage.currentRawAir += (int)((double)changeRatio * ((double)newTime / (double)DEFAULT_BREATH_TIME));
-			if(playerStorage.currentRawAir > newTime) playerStorage.currentRawAir = newTime;
+			playerStorage.currentRawAir += (int)((double)changeRatio * ((double)newTimeInTicks / (double)DEFAULT_BREATH_TIME));
+			if(playerStorage.currentRawAir > newTimeInTicks) playerStorage.currentRawAir = newTimeInTicks;
 		}
 		
 		if(changeRatio < 0){
@@ -153,7 +153,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 			playerStorage.currentRawAir -= 20;
 		}
 		
-		playerStorage.currentScaledAir = (int)((double)playerStorage.currentRawAir * ((double)DEFAULT_BREATH_TIME / (double)newTime));
+		playerStorage.currentScaledAir = (int)((double)playerStorage.currentRawAir * ((double)DEFAULT_BREATH_TIME / (double)newTimeInTicks));
 		player.getPlayer().setRemainingAir(playerStorage.currentScaledAir);
 		return false;
 	}
@@ -161,7 +161,7 @@ public class UnderwaterBreathTrait extends TickEverySecondsTrait {
 
 	@Override
 	protected String getPrettyConfigIntern() {
-		return "you can breath for " + newTime + " Seconds";
+		return "you can breath for " + (newTimeInTicks/20) + " Seconds";
 	}
 
 
