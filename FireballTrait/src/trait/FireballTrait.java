@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
@@ -48,10 +49,22 @@ import de.tobiyas.racesandclasses.util.entitysearch.SearchEntity;
 import de.tobiyas.racesandclasses.util.friend.EnemyChecker;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
+import de.tobiyas.util.RaC.schedule.DebugBukkitRunnable;
+import de.tobiyas.util.RaC.vollotile.ParticleEffects;
+import de.tobiyas.util.RaC.vollotile.helper.ParticleHelper;
 
 public class FireballTrait extends AbstractMagicSpellTrait implements Listener  {
 
+	/**
+	 * the damage this does.
+	 */
 	private double damage = 3;
+	
+	/**
+	 * the maximal range of the fireball.
+	 */
+	private double maxRange = 20;
+	
 	
 	public FireballTrait() {
 		Bukkit.getPluginManager().registerEvents(this, (Plugin) RacesAndClasses.getPlugin());
@@ -80,16 +93,16 @@ public class FireballTrait extends AbstractMagicSpellTrait implements Listener  
 	}
 
 	@TraitConfigurationNeeded(fields = {
-			@TraitConfigurationField(classToExpect = Double.class, fieldName = "damage", optional = true)
+			@TraitConfigurationField(classToExpect = Double.class, fieldName = "damage", optional = true),
+			@TraitConfigurationField(classToExpect = Double.class, fieldName = "range", optional = true)
 	})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap)
 			throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		if(configMap.containsKey("damage")){
-			damage = configMap.getAsDouble("damage");
-		}
+		damage = configMap.getAsDouble("damage", 3);
+		maxRange = configMap.getAsDouble("range", 20);
 	}
 	
 	
@@ -147,12 +160,43 @@ public class FireballTrait extends AbstractMagicSpellTrait implements Listener  
 		
 		Fireball fireball = player.getPlayer().launchProjectile(Fireball.class);
 		fireball.setVelocity(viewDirection);
-		
 		fireball.setMetadata(META_KEY, new FixedMetadataValue((Plugin) plugin, player));
+		startFireballRangeShortener(fireball);
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.launched_something, "name", "Fireball");
 		result.setTriggered(true);
 		return;
+	}
+	
+	/**
+	 * Starts a fireball Remover ticker.
+	 * @param fireball to remove.
+	 */
+	private void startFireballRangeShortener(final Fireball fireball){
+		new DebugBukkitRunnable("FireballRangeChecker") {
+			private final Location start = fireball.getLocation();
+			
+			@Override
+			protected void runIntern() {
+				boolean sameWorld = start.getWorld() == fireball.getWorld();
+				double distSquare = sameWorld ? 133700 : fireball.getLocation().distanceSquared(start);
+				double maxDistSquare = maxRange * maxRange;
+				
+				if(!fireball.isValid() 
+						|| fireball.isDead() 
+						|| distSquare > maxDistSquare){
+					
+					if(!fireball.isDead()) {
+						fireball.remove();
+						ParticleHelper.sendParticleEffectToAll(
+								ParticleEffects.HUGE_EXPLOSION, 
+								fireball.getLocation(), new Vector(0,0.1,0), 0, 1);
+					}
+					
+					this.cancel();
+				}
+			}
+		}.runTaskTimer(plugin, 10, 10);
 	}
 	
 }
