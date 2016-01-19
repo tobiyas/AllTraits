@@ -129,7 +129,7 @@ public class StunSpellTrait extends AbstractMagicSpellTrait {
 		
 		String targetName = "";
 		
-		int modDur = modifyToPlayer(player, duration);
+		int modDur = modifyToPlayer(player, duration*20);
 		if(target instanceof Player){
 			StunAPI.StunPlayer.stunPlayerForTicks((Player)target, modDur);
 			targetName = ((Player) target).getDisplayName();
