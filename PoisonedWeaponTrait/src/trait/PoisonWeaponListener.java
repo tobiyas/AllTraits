@@ -16,6 +16,7 @@
 package trait;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -25,6 +26,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -48,7 +50,7 @@ public class PoisonWeaponListener implements Listener{
 	
 	private final PoisonedWeaponTrait trait;
 	
-	private final List<Recipe> recipes = new LinkedList<Recipe>();
+	private final List<ShapelessRecipe> recipes = new LinkedList<ShapelessRecipe>();
 	
 	private int applications = 1;
 	
@@ -120,9 +122,7 @@ public class PoisonWeaponListener implements Listener{
 			recipe.addIngredient(PoisonWeaponListener.PoisonItem);
 			
 			boolean worked = Bukkit.addRecipe(recipe);
-			if(worked){
-				recipes.add(recipe);
-			}
+			if(worked) recipes.add(recipe);
 		}
 	}
 
@@ -133,11 +133,43 @@ public class PoisonWeaponListener implements Listener{
 		Iterator<Recipe> recipeIt = Bukkit.recipeIterator();
 		while(recipeIt.hasNext()){
 			Recipe toInvestigate = recipeIt.next();
-			for(Recipe recipe : recipes){
-				if(recipe.getResult().isSimilar(toInvestigate.getResult())){
-					recipeIt.remove();
-					break;
+			if(!(toInvestigate instanceof ShapelessRecipe)) continue;
+			
+			ShapelessRecipe bukkitRecipt = (ShapelessRecipe) toInvestigate;
+			ItemStack bukkitResult = bukkitRecipt.getResult();
+			List<ItemStack> bukkitIngredients = bukkitRecipt.getIngredientList();
+			
+			//Check against own:
+			for(ShapelessRecipe recipe : recipes){
+				//2 receipts are similar if the id + damage of ingredients + results are same.
+				ItemStack ownResult = recipe.getResult();
+				List<ItemStack> ownIngredients = recipe.getIngredientList();
+				
+				//Check item:
+				if(ownResult.getType() != bukkitResult.getType()) continue;
+				if(ownResult.getDurability() != bukkitResult.getDurability()) continue;
+				
+				boolean isRecipe = true;
+				for(ItemStack bukkitIngredient : bukkitIngredients){
+					boolean found = false;
+					for(ItemStack ownIngredient : ownIngredients){
+						if(ownIngredient.getType() != bukkitIngredient.getType()) continue;
+						if(ownIngredient.getDurability() != bukkitIngredient.getDurability()) continue;
+						
+						found = true;
+						break;
+					}
+
+					//If not found, is not recipe.
+					if(!found) {
+						isRecipe = false;
+						break;
+					}
 				}
+				
+				//Not found:
+				if(!isRecipe) continue;
+				recipeIt.remove();
 			}
 		}
 		
@@ -179,8 +211,26 @@ public class PoisonWeaponListener implements Listener{
 		}
 	}
 	
+	/**
+	 * Gets the First player.
+	 * @param collection to check
+	 * @return the first found player. Null if none found.
+	 */
+	private RaCPlayer getFirst(Collection<HumanEntity> collection){
+		for(HumanEntity entity : collection){
+			if(entity instanceof Player) {
+				Player player = (Player) entity;
+				return RaCPlayerManager.get().getPlayer(player);
+			}
+		}
+		
+		return null;
+	}
+	
+	
 	@EventHandler
 	public void OnPoisonOnWeaponBefore(PrepareItemCraftEvent event){
+		RaCPlayer player = getFirst(event.getViewers());
 		Recipe recipe = event.getRecipe();
 		for(Recipe ownRecipe : recipes){
 			if(!ownRecipe.getResult().isSimilar(recipe.getResult())){
@@ -192,8 +242,14 @@ public class PoisonWeaponListener implements Listener{
 				if(item.getType() == PoisonItem) continue;
 				if(item.getType() == Material.AIR) continue;
 				
+				//If not has Trait -> Set to empty!
+				if(player != null && !TraitHolderCombinder.checkContainer(player, trait)){
+					event.getInventory().setResult(null);
+					return;
+				}
+				
+				//Replace if has.
 				ItemStack newItem = item.clone();
-
 				ItemMeta meta = newItem.getItemMeta();
 				List<String> lore = meta.hasLore() ? meta.getLore() : new LinkedList<String>();
 				
