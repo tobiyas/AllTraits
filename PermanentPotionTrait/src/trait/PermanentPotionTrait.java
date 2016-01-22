@@ -18,11 +18,13 @@ package trait;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import de.tobiyas.racesandclasses.datacontainer.player.RaCPlayer;
 import de.tobiyas.racesandclasses.datacontainer.traitholdercontainer.AbstractTraitHolder;
@@ -30,12 +32,13 @@ import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configur
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationField;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitConfigurationNeeded;
 import de.tobiyas.racesandclasses.traitcontainer.interfaces.annotations.configuration.TraitInfos;
+import de.tobiyas.racesandclasses.traitcontainer.interfaces.markerinterfaces.TraitJoinLeave;
 import de.tobiyas.racesandclasses.traitcontainer.traits.pattern.TickEverySecondsTrait;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfiguration;
 import de.tobiyas.racesandclasses.util.traitutil.TraitConfigurationFailedException;
 import de.tobiyas.racesandclasses.vollotile.Vollotile;
 
-public class PermanentPotionTrait extends TickEverySecondsTrait {
+public class PermanentPotionTrait extends TickEverySecondsTrait implements TraitJoinLeave {
 
 	
 	/**
@@ -60,6 +63,7 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 	}
 
 
+	@SuppressWarnings("deprecation")
 	@TraitConfigurationNeeded( fields = {
 			@TraitConfigurationField(fieldName = "amplifier", classToExpect = Integer.class, optional = false),
 			@TraitConfigurationField(fieldName = "type", classToExpect = Integer.class, optional = false),
@@ -70,20 +74,15 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		//Put the overriding stuff in it.
-		configMap.put("seconds", (Integer)5);
+		configMap.put("seconds", 5);
 		super.setConfiguration(configMap);
 		
 		
-		amplifier = (Integer) configMap.get("amplifier");
-		type = PotionEffectType.getById((Integer) configMap.get("type"));
-
-		if(configMap.containsKey("removeParticles")){
-			removeParticles = (Boolean) configMap.get("removeParticles");
-		}
+		amplifier = configMap.getAsInt("amplifier", 1);
+		type = PotionEffectType.getById(configMap.getAsInt("type", 0));
+		removeParticles = configMap.getAsBool("removeParticles", false);
 		
-		if(type == null){
-			throw new TraitConfigurationFailedException("unknown Potion effect.");
-		}
+		if(type == null) throw new TraitConfigurationFailedException("unknown Potion effect.");
 	}
 
 	public static List<String> getHelpForTrait(){
@@ -100,13 +99,13 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 
 	
 	
-	int particleTaskID = -1;
+	private BukkitTask particleTask = null;
 
 	@Override
 	protected boolean tickDoneForPlayer(RaCPlayer player) {
 		boolean replace = true;
 		for(PotionEffect effect : player.getPlayer().getActivePotionEffects()){
-			if(effect.getType() == type && effect.getDuration() > 20 * 15){
+			if(effect.getType() == type && effect.getAmplifier() > amplifier){
 				replace = false;
 				break;
 			}
@@ -114,17 +113,15 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 		
 		if(replace){
 			int modAmp = modifyToPlayer(player, amplifier);
-			PotionEffect newPotionEffect = new PotionEffect(type, 20 * 15, modAmp);				
+			PotionEffect newPotionEffect = new PotionEffect(type, 20 * 10*60*60, modAmp);			
 			player.getPlayer().addPotionEffect(newPotionEffect, true);
 			
-			if(removeParticles){
-				Vollotile.get().removeParticleEffect(player.getPlayer());
-			}
+			if(removeParticles) Vollotile.get().removeParticleEffect(player.getPlayer());
 		}
 		
-		if(removeParticles && particleTaskID < 0){
-			particleTaskID = Bukkit.getScheduler().scheduleSyncRepeatingTask((JavaPlugin)plugin, new Runnable() {
-				
+		//Generate Task if not running.
+		if(removeParticles && particleTask == null){
+			particleTask = new BukkitRunnable() {
 				@Override
 				public void run() {
 					for(AbstractTraitHolder holder : PermanentPotionTrait.this.getTraitHolders()){
@@ -136,7 +133,7 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 					}
 					
 				}
-			}, 5, 5);
+			}.runTaskTimer((JavaPlugin)plugin, 10, 10);
 		}
 		
 		return true;
@@ -150,5 +147,16 @@ public class PermanentPotionTrait extends TickEverySecondsTrait {
 	@Override
 	public boolean isStackable(){
 		return true;
+	}
+
+
+	@Override
+	public void playerJoines(RaCPlayer racPlayer) {}
+
+
+	@Override
+	public void playerLeaves(RaCPlayer racPlayer) {
+		Player player = racPlayer.getPlayer();
+		if(player != null) player.removePotionEffect(type);
 	}
 }
