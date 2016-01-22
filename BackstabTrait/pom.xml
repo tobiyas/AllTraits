@@ -33,7 +33,7 @@
       <dependency>
           <groupId>de.tobiyas</groupId>
           <artifactId>RacesAndClasses</artifactId>
-          <version>1.1.8-SNAPSHOT</version>
+          <version>1.1.9-SNAPSHOT</version>
           <optional>true</optional>
       </dependency>
       
