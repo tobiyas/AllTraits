@@ -142,7 +142,7 @@ public class ExplosiveArrowTrait extends AbstractArrow{
 		Entity shooter = Shooter.getShooter(arrow);
 		for(LivingEntity entity : damageTo){
 			Event newEvent = CompatibilityModifier.EntityDamageByEntity
-					.safeCreateEvent(shooter, entity, DamageCause.ENTITY_EXPLOSION, modifyToPlayer(RaCPlayerManager.get().getPlayer(player), totalDamage));
+					.safeCreateEvent(shooter, entity, DamageCause.ENTITY_EXPLOSION, modifyToPlayer(RaCPlayerManager.get().getPlayer(player), totalDamage, "damage"));
 			
 			TraitEventManager.fireEvent(newEvent);
 		}

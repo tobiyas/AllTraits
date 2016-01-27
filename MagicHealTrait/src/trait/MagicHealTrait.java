@@ -134,7 +134,7 @@ public class MagicHealTrait extends AbstractMagicSpellTrait {
 			return;
 		}
 		
-		double modValue = modifyToPlayer(player, value);
+		double modValue = modifyToPlayer(player, value, "value");
 		EntityHealOtherEntityEvent event = new EntityHealOtherEntityEvent(target, modValue, RegainReason.MAGIC, player.getPlayer());
 		plugin.fireEventToBukkit(event);
 		

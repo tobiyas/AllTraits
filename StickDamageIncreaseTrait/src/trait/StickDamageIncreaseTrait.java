@@ -74,7 +74,7 @@ public class StickDamageIncreaseTrait extends AbstractPassiveTrait{
 	@Override
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
-		double newValue = getNewValue(eventWrapper.getPlayer(), Eevent.getDamage());
+		double newValue = getNewValue(eventWrapper.getPlayer(), Eevent.getDamage(), "value");
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 		return TraitResults.True();

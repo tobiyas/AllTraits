@@ -129,7 +129,7 @@ public class WeaponNextHitDamageIncreaseBuffTrait extends AbstractBuffTrait impl
 			if(!weaponMats.contains(inHand.getType())) return;
 			
 			double damage = EntityDamage.safeGetDamage(event);
-			damage += modifyToPlayer(damager, this.damage);
+			damage += modifyToPlayer(damager, this.damage, "damage");
 			
 			EntityDamage.safeSetDamage(damage, event);
 			buffUsed(damager);

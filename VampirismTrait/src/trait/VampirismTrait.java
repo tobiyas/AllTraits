@@ -84,7 +84,7 @@ public class VampirismTrait extends AbstractPassiveTrait{
 				((Projectile)Eevent.getDamager()).getShooter() : 
 				Eevent.getDamager());
 		
-		double regain = damage * (modifyToPlayer(eventWrapper.getPlayer(), value));
+		double regain = damage * (modifyToPlayer(eventWrapper.getPlayer(), value, "value"));
 		EntityRegainHealthEvent healEvent 
 			= new EntityRegainHealthEvent(damager, regain, RegainReason.MAGIC);
 		

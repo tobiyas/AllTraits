@@ -99,7 +99,7 @@ public class MultishotArrowTrait extends AbstractArrow {
 		final int angle = 10;
 		int currentAngle = angle;
 		
-		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows);
+		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows, "amount");
 		for(int i = 1; i < modAmount; i++){
 			currentAngle = ((i + 1) /2 ) * angle;
 			

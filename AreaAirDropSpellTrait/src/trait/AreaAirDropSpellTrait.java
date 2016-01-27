@@ -232,7 +232,7 @@ public class AreaAirDropSpellTrait extends AbstractMagicSpellTrait implements Li
 		if(damager.getPlayer() == targetEntity) return; //cant hurt yourself.
 		
 		LivingEntity target = (LivingEntity) targetEntity;
-		double modDamage = modifyToPlayer(damager, this.damage);
+		double modDamage = modifyToPlayer(damager, this.damage, "damage");
 		double damage = PreEntityDamageEvent.getRealDamage(damager.getPlayer(), target, DamageCause.CONTACT, modDamage);
 		if(damage <= 0) return;
 		
@@ -252,7 +252,7 @@ public class AreaAirDropSpellTrait extends AbstractMagicSpellTrait implements Li
 		Random rand = new Random();
 		
 		int i = 0;
-		int modAmount = modifyToPlayer(player, this.amount);
+		int modAmount = modifyToPlayer(player, this.amount, "amount");
 		
 		while(locs.size() < modAmount){
 			double xOffset = (rand.nextDouble() * rainRange * 2) - (rainRange);

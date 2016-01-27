@@ -103,18 +103,10 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 		seconds = configMap.getAsDouble("duration");
 		totalDamage = configMap.getAsDouble("totaldamage");
 		
-		if(configMap.containsKey("applications")){
-			applications = configMap.getAsInt("applications");
-		}
-		
-		if(configMap.containsKey("chance")){
-			chance = configMap.getAsDouble("chance");
-		}
+		applications = configMap.getAsInt("applications", 10);
+		chance = configMap.getAsDouble("chance", 0.2);
 
-		if(configMap.containsKey("poisonMaterial")){
-			poisonMaterial = configMap.getAsMaterial("poisonMaterial");
-			PoisonWeaponListener.PoisonItem = poisonMaterial;
-		}
+		PoisonWeaponListener.PoisonItem = poisonMaterial = configMap.getAsMaterial("poisonMaterial", Material.RED_ROSE);
 	}
 	
 	
@@ -135,7 +127,7 @@ public class PoisonedWeaponTrait extends AbstractBasicTrait{
 			if(EnemyChecker.areAllies(causer, target)) return TraitResults.False();
 			
 			int time = (int) seconds * 20;
-			int amplifier = (int) modifyToPlayer(RaCPlayerManager.get().getPlayer(causer), totalDamage);
+			int amplifier = (int) modifyToPlayer(RaCPlayerManager.get().getPlayer(causer), totalDamage, "totalDamage");
 			
 			PotionEffect effect = new PotionEffect(PotionEffectType.POISON, time, amplifier);
 			target.addPotionEffect(effect, true);

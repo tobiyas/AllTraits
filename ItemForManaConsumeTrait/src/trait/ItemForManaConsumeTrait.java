@@ -113,7 +113,7 @@ public class ItemForManaConsumeTrait extends AbstractMagicSpellTrait {
 			return;
 		}
 		
-		double modValue = modifyToPlayer(player, value);
+		double modValue = modifyToPlayer(player, value, "value");
 		ManaRegenerationEvent event = new ManaRegenerationEvent(player.getPlayer(), modValue);
 		plugin.fireEventToBukkit(event);
 		

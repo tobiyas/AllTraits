@@ -89,19 +89,9 @@ public class QuickArrowShotTrait extends AbstractArrow {
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		if(configMap.containsKey("amount")){
-			amountArrows = configMap.getAsInt("amount");			
-		}
-		
-		
-		if(configMap.containsKey("every")){
-			every = configMap.getAsInt("every");
-		}
-		
-		
-		if(configMap.containsKey("useArrow")){
-			useArrow = configMap.getAsBool("useArrow");
-		}
+		amountArrows = configMap.getAsInt("amount", 4);			
+		every = configMap.getAsInt("every", 5);
+		useArrow = configMap.getAsBool("useArrow", true);
 	}
 
 	
@@ -111,7 +101,7 @@ public class QuickArrowShotTrait extends AbstractArrow {
 		
 		final double speed = event.getProjectile().getVelocity().length();
 		
-		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows);
+		int modAmount = modifyToPlayer(RaCPlayerManager.get().getPlayer(shooter), amountArrows, "amount");
 		for(int i = 1; i < modAmount; i++){
 			new BukkitRunnable(){
 				@Override

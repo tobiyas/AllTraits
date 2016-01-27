@@ -269,7 +269,7 @@ public class ThrowItemTrait extends AbstractMagicSpellTrait implements Listener 
 		if(thrower.getPlayer() == target) return false;
 		if(!EnemyChecker.areEnemies(thrower.getPlayer(), target)) return false;
 		
-		double damage = PreEntityDamageEvent.getRealDamage(thrower.getPlayer(), target, DamageCause.CONTACT, modifyToPlayer(thrower, this.damage));
+		double damage = PreEntityDamageEvent.getRealDamage(thrower.getPlayer(), target, DamageCause.CONTACT, modifyToPlayer(thrower, this.damage, "damage"));
 		if(damage <= 0) return false;
 		
 		de.tobiyas.racesandclasses.util.bukkit.versioning.compatibility.CompatibilityModifier.LivingEntity

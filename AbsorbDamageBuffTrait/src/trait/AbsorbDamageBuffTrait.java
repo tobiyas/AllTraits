@@ -149,7 +149,7 @@ public class AbsorbDamageBuffTrait extends AbstractBuffTrait{
 	
 	@Override
 	protected void buffActivated(RaCPlayer player) {
-		double modified = modifyToPlayer(player, value);
+		double modified = modifyToPlayer(player, value, "value");
 		absorbMap.put(player, modified);
 	}
 

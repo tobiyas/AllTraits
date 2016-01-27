@@ -129,30 +129,15 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		if(configMap.containsKey("range")){
-			this.range = configMap.getAsInt("range");
-		}
-		
-		if(configMap.containsKey("damage")){
-			this.damage = configMap.getAsDouble("damage");
-		}
-		
-		if(configMap.containsKey("targetParticles")){
-			this.targetParticles = configMap.getAsParticleContainer("targetParticles");
-		}
+		//General stuff:
+		this.range = configMap.getAsInt("range",4);
+		this.damage = configMap.getAsDouble("damage", 3);
+		this.targetParticles = configMap.getAsParticleContainer("targetParticles", targetParticles);
 		
 		//potions.
-		if(configMap.containsKey("potionAmplifier")){
-			this.potionAmplifier = configMap.getAsInt("potionAmplifier");
-		}
-
-		if(configMap.containsKey("potionAmplifier")){
-			this.potionAmplifier = configMap.getAsInt("potionAmplifier");
-		}
-		
-		if(configMap.containsKey("potionType")){
-			this.potionType = configMap.getAsPotionEffectType("potionType");
-		}
+		this.potionAmplifier = configMap.getAsInt("potionAmplifier", 0);
+		this.potionDuration = configMap.getAsInt("potionDuration", 20 * 10);
+		this.potionType = configMap.getAsPotionEffectType("potionType", null);
 	}
 	
 	
@@ -183,7 +168,7 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 				EnemyChecker.areEnemies(player.getPlayer(), targetEntity)){
 			LanguageAPI.sendTranslatedMessage(player, Keys.success);
 			
-			final double modDamage = modifyToPlayer(player, damage);
+			final double modDamage = modifyToPlayer(player, damage, "damage");
 			BukkitRunnable runnable = new BukkitRunnable(){
 				@Override
 				public void run(){
@@ -191,7 +176,7 @@ public class MagicDamageTrait extends AbstractMagicSpellTrait  {
 					CompatibilityModifier.LivingEntity.safeDamageEntityByEntity((LivingEntity)targetEntity, player.getPlayer(), modDamage, DamageCause.MAGIC);
 
 					if(potionAmplifier <= 0 || potionType == null || potionDuration <= 0) return;
-					int modAmp = modifyToPlayer(player, potionAmplifier);
+					int modAmp = modifyToPlayer(player, potionAmplifier, "potionAmplifier");
 					PotionEffect effect = new PotionEffect(potionType, potionDuration, modAmp);
 					targetEntity.addPotionEffect(effect);
 				}

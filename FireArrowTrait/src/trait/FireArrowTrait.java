@@ -100,7 +100,7 @@ public class FireArrowTrait extends AbstractArrow {
 		if(!(damager instanceof Player)) return false;
 		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player) damager);
 		
-		double damagePerTick = modifyToPlayer(shooter ,totalDamage) / duration;
+		double damagePerTick = modifyToPlayer(shooter ,totalDamage, "damage") / duration;
 		DamageTicker ticker = new DamageTicker((LivingEntity) hitTarget, duration, damagePerTick, DamageCause.FIRE_TICK, event.getDamager());
 		ticker.playEffectOnDmg(Effect.MOBSPAWNER_FLAMES, 4);
 		hitTarget.setFireTicks(duration * 20);

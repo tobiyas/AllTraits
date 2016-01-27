@@ -75,7 +75,7 @@ public class ManaRegenerationTrait extends AbstractBasicTrait {
 					for(AbstractTraitHolder holder : ManaRegenerationTrait.this.getTraitHolders()){
 						for(RaCPlayer player : holder.getHolderManager().getAllPlayersOfHolder(holder)){
 							if(player != null && player.isOnline()){
-								double modValue = modifyToPlayer(player, value);
+								double modValue = modifyToPlayer(player, value, "value");
 								Bukkit.getPluginManager().callEvent(new ManaRegenerationEvent(player.getPlayer(), modValue));
 							}
 						}

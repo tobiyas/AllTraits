@@ -98,7 +98,7 @@ public class MightyArrowTrait extends AbstractArrow {
 		if(!EnemyChecker.areEnemies(event.getDamager(), hitTarget)) return false;
 		
 		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player) shooterEntity);
-		double modDamage = modifyToPlayer(shooter, additionalDamage);
+		double modDamage = modifyToPlayer(shooter, additionalDamage, "damage");
 		
 		double newDamage = modDamage + EntityDamage.safeGetDamage(event);
 		EntityDamage.safeSetDamage(newDamage, event);

@@ -119,7 +119,7 @@ public class TauntTrait extends AbstractMagicSpellTrait implements Listener {
 	
 	
 	private void scheduleTauntRemove(final RaCPlayer player, final Creature target) {
-		int modDur = modifyToPlayer(player, seconds * 20);
+		int modDur = modifyToPlayer(player, seconds * 20, "seconds");
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask((Plugin)plugin, new Runnable(){
 			@Override
@@ -212,7 +212,7 @@ public class TauntTrait extends AbstractMagicSpellTrait implements Listener {
 		taunts.add(target);
 		tauntMap.put(player.getName(), taunts);
 		
-		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), modifyToPlayer(player, seconds), Keys.trait_taunt_fade,
+		MessageScheduleApi.scheduleTranslateMessageToPlayer(player.getName(), modifyToPlayer(player, seconds, "seconds"), Keys.trait_taunt_fade,
 				"target", targetName);
 		
 		scheduleTauntRemove(player, target);

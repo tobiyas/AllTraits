@@ -73,7 +73,7 @@ public class DodgeTrait extends AbstractPassiveTrait{
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		EntityDamageEvent Eevent = (EntityDamageEvent) event;
 		double num = new Random().nextDouble() * 100;
-		if(num <= modifyToPlayer(eventWrapper.getPlayer(), value)){
+		if(num <= modifyToPlayer(eventWrapper.getPlayer(), value, "chance")){
 			Eevent.setCancelled(true);
 			Player player = (Player) Eevent.getEntity();
 			player.getWorld().playSound(player.getLocation(), Sound.SHOOT_ARROW, 10, 1);

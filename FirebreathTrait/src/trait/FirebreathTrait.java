@@ -123,7 +123,7 @@ public class FirebreathTrait extends AbstractMagicSpellTrait implements Listener
 		}
 		
 		Set<LivingEntity> damageing = SearchEntity.allInLineOfSight(range, player.getPlayer());
-		double modDamge = modifyToPlayer(player, damage);
+		double modDamge = modifyToPlayer(player, damage, "damage");
 		
 		for(LivingEntity target : damageing){
 			if(!EnemyChecker.areAllies(player.getPlayer(), target)){

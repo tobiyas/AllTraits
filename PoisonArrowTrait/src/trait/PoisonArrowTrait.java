@@ -95,7 +95,7 @@ public class PoisonArrowTrait extends AbstractArrow {
 		if(!(damager instanceof Player)) return false;
 		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player) damager);
 		
-		double damagePerTick = modifyToPlayer(shooter, totalDamage) / duration;
+		double damagePerTick = modifyToPlayer(shooter, totalDamage, "totalDamage") / duration;
 		DamageTicker ticker = new DamageTicker((LivingEntity) hitTarget, duration, damagePerTick, DamageCause.POISON, event.getDamager());
 		ticker.linkPotionEffect(PotionEffectTypeWrapper.POISON.createEffect(duration, 0));
 		return false;

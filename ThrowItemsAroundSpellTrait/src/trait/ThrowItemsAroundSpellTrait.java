@@ -275,7 +275,7 @@ public class ThrowItemsAroundSpellTrait extends AbstractMagicSpellTrait implemen
 		if(thrower.getPlayer() == target) return false;
 		if(!EnemyChecker.areEnemies(thrower.getPlayer(), target)) return false;
 		
-		double damage = PreEntityDamageEvent.getRealDamage(thrower.getPlayer(), target, DamageCause.CONTACT, modifyToPlayer(thrower, this.damage));
+		double damage = PreEntityDamageEvent.getRealDamage(thrower.getPlayer(), target, DamageCause.CONTACT, modifyToPlayer(thrower, this.damage, "damage"));
 		if(damage <= 0) return false;
 		
 		target.setNoDamageTicks(0);
@@ -293,7 +293,7 @@ public class ThrowItemsAroundSpellTrait extends AbstractMagicSpellTrait implemen
 		ItemStack item = new ItemStack(mat);
 		item.setDurability((byte)matDamageValue);
 		
-		double modAmount = modifyToPlayer(player, amount);
+		double modAmount = modifyToPlayer(player, amount, "damage");
 		for(int i = 0; i < modAmount; i++){
 			Item droppedItem = player.getLocation().getWorld().dropItem(player.getLocation().clone().add(0,1.5,0), item);
 			

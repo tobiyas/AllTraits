@@ -85,7 +85,7 @@ public class BashTrait extends AbstractPassiveTrait{
 	public TraitResults trigger(EventWrapper eventWrapper) {   Event event = eventWrapper.getEvent();
 		EntityDamageByEntityEvent Eevent = (EntityDamageByEntityEvent) event;
 		double num = new Random().nextDouble() * 100;
-		if(num <= modifyToPlayer(eventWrapper.getPlayer(), value)){
+		if(num <= modifyToPlayer(eventWrapper.getPlayer(), value, "chance")){
 			Eevent.setCancelled(true);
 			Player player = (Player) Eevent.getDamager();
 			LivingEntity target = (LivingEntity) Eevent.getEntity();

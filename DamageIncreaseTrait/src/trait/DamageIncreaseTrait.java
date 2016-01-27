@@ -77,7 +77,7 @@ public class DamageIncreaseTrait extends AbstractPassiveTrait {
 			entity = CompatibilityModifier.Shooter.getShooter((Arrow)entity);
 		
 		double oldValue = CompatibilityModifier.EntityDamage.safeGetDamage(Eevent);
-		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue, "value");
 		
 		CompatibilityModifier.EntityDamage.safeSetDamage(newValue, Eevent);
 		

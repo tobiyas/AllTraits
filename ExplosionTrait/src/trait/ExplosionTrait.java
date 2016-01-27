@@ -131,7 +131,7 @@ public class ExplosionTrait extends AbstractMagicSpellTrait  {
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.SOUTH).getLocation(), 0);
 		location.getWorld().createExplosion(location.getBlock().getRelative(BlockFace.WEST).getLocation(), 0);
 		
-		double modDamage = modifyToPlayer(player, damage);
+		double modDamage = modifyToPlayer(player, damage, "damage");
 		
 		if(explode){
 			lastCaster = player.getUniqueId();

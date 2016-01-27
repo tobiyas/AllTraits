@@ -75,7 +75,7 @@ public class HungerReplenishTrait extends AbstractPassiveTrait {
 		int orgValue = player.getFoodLevel();
 		int newValue = Eevent.getFoodLevel();
 		
-		int newCalcValue = (int) Math.ceil((getNewValue(eventWrapper.getPlayer(), newValue - orgValue)) + orgValue);
+		int newCalcValue = (int) Math.ceil((getNewValue(eventWrapper.getPlayer(), newValue - orgValue, "value")) + orgValue);
 		Eevent.setFoodLevel(newCalcValue);
 		return TraitResults.True();
 	}

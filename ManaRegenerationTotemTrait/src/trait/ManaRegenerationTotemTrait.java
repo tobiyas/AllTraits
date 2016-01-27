@@ -82,7 +82,7 @@ public class ManaRegenerationTotemTrait extends AbstractTotemTrait {
 	protected void tickOnPlayer(TotemInfos infos, Player player) {
 		RaCPlayer racPlayer = RaCPlayerManager.get().getPlayer(player);
 		
-		double modValue = modifyToPlayer(infos.getOwner(), value);
+		double modValue = modifyToPlayer(infos.getOwner(), value, "value");
 		racPlayer.getManaManager().fillMana(modValue);
 		player.getLocation().getWorld().playEffect(player.getLocation().add(0, 1, 0), Effect.ENDER_SIGNAL, 0);
 	}

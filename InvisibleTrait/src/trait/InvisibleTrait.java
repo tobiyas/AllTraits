@@ -101,7 +101,7 @@ public class InvisibleTrait extends AbstractContinousCostMagicSpellTrait  {
 	@Override
 	protected boolean activateIntern(RaCPlayer player) {	
 		int time = everyXSeconds <= 0 ? durationInSeconds : everyXSeconds;
-		time = modifyToPlayer(player, time);
+		time = modifyToPlayer(player, time, "duration");
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_invisible_toggle, 
 				"duration", String.valueOf(time));

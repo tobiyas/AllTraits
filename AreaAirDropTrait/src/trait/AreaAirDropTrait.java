@@ -243,7 +243,7 @@ public class AreaAirDropTrait extends AbstractMagicSpellTrait implements Listene
 		if(!(targetEntity instanceof LivingEntity)) return;
 		if(damager.getPlayer() == targetEntity) return; //cant hurt yourself.
 		
-		double modDamage = modifyToPlayer(damager, this.damage);
+		double modDamage = modifyToPlayer(damager, this.damage, "damage");
 		LivingEntity target = (LivingEntity) targetEntity;
 		double damage = PreEntityDamageEvent.getRealDamage(damager.getPlayer(), target, DamageCause.CONTACT, modDamage);
 		if(damage <= 0) return;
@@ -264,7 +264,7 @@ public class AreaAirDropTrait extends AbstractMagicSpellTrait implements Listene
 		Random rand = new Random();
 		
 		int i = 0;
-		int modAmount = modifyToPlayer(player, this.amount);
+		int modAmount = modifyToPlayer(player, this.amount, "amount");
 		
 		while(locs.size() < modAmount){
 			double xOffset = (rand.nextDouble() * rainRange * 2) - (rainRange);
@@ -291,6 +291,7 @@ public class AreaAirDropTrait extends AbstractMagicSpellTrait implements Listene
 		for(Location loc : spawnLocs){
 			if(loc.getBlock().getType() != Material.AIR) continue;
 			
+			@SuppressWarnings("deprecation")
 			FallingBlock entity = loc.getWorld().spawnFallingBlock(loc, mat.getId(), (byte)matDamageValue);
 			entity.setDropItem(false);
 			

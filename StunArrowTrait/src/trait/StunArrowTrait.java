@@ -125,7 +125,7 @@ public class StunArrowTrait extends AbstractArrow {
 		}
 		
 		RaCPlayer racshooter = RaCPlayerManager.get().getPlayer((Player) shooter);
-		int modDur = modifyToPlayer(racshooter, duration);
+		int modDur = modifyToPlayer(racshooter, duration, "duration");
 		
 		boolean stunned = StunAPI.StunEntity.stunEntityForSeconds(shooter, hitTarget, modDur);
 		if(stunned){

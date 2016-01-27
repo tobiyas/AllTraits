@@ -81,21 +81,11 @@ public class PotionArrowTrait extends AbstractArrow {
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		if(configMap.containsKey("duration")){
-			duration = configMap.getAsInt("duration");
-		}
+		duration = configMap.getAsInt("duration", 10);
+		type = configMap.getAsPotionEffectType("type", PotionEffectType.SLOW);
 		
-		if(configMap.containsKey("type")){
-			type = configMap.getAsPotionEffectType("totalDamage");
-		}
-		
-		if(configMap.containsKey("amplifier")){
-			amplifier = configMap.getAsInt("amplifier");
-		}
-		
-		if(configMap.containsKey("target")){
-			target = configMap.getAsTargetType("target");
-		}
+		amplifier = configMap.getAsInt("amplifier",1);
+		target = configMap.getAsTargetType("target", TargetType.ENEMY);
 	}
 	
 	@Override
@@ -112,7 +102,7 @@ public class PotionArrowTrait extends AbstractArrow {
 		if(!EnemyChecker.isApplyable(event.getDamager(), hitTarget, target)) return false;
 		
 		RaCPlayer shooter = RaCPlayerManager.get().getPlayer((Player)event.getDamager());
-		int modAmp = modifyToPlayer(shooter, amplifier);
+		int modAmp = modifyToPlayer(shooter, amplifier, "amplifier");
 		
 		PotionEffect effect = new PotionEffect(type, duration * 20, modAmp);
 		((LivingEntity) hitTarget).addPotionEffect(effect);

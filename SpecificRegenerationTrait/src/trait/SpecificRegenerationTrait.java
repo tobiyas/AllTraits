@@ -114,7 +114,7 @@ public class SpecificRegenerationTrait extends TickEverySecondsTrait {
 
 	@Override
 	protected boolean tickDoneForPlayer(RaCPlayer player) {
-        double modHeal = modifyToPlayer(player, heal);
+        double modHeal = modifyToPlayer(player, heal, "health");
         EntityHealEvent regainHealthEvent = 
                 CompatibilityModifier.EntityHeal.safeGenerate(player.getPlayer(), modHeal, RegainReason.REGEN);
         

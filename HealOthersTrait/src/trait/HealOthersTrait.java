@@ -67,6 +67,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 	public void importTrait() {
 	}
 
+	@SuppressWarnings("deprecation")
 	@TraitEventsUsed(registerdClasses = {PlayerInteractEntityEvent.class, PlayerInteractEvent.class})
 	@Override
 	public void generalInit() {
@@ -142,7 +143,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 			return false;
 		}
 		
-		double amount = modifyToPlayer(RaCPlayerManager.get().getPlayer(player), value);
+		double amount = modifyToPlayer(RaCPlayerManager.get().getPlayer(player), value, "value");
 		if(currentHealth + amount > maxHealth) amount = maxHealth - currentHealth;
 		
 		EntityHealEvent entityHealEvent = new EntityHealOtherEntityEvent(player, amount, RegainReason.MAGIC, player);
@@ -190,7 +191,7 @@ public class HealOthersTrait extends AbstractBasicTrait {
 			return false;
 		}
 		
-		double amount = modifyToPlayer(RaCPlayerManager.get().getPlayer(playerInteracting), value);
+		double amount = modifyToPlayer(RaCPlayerManager.get().getPlayer(playerInteracting), value, "value");
 		if(currentHealth + amount > maxHealth) amount = maxHealth - currentHealth;
 		
 		Player targetPlayer = (Player) target;

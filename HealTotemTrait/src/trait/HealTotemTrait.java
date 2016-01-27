@@ -85,7 +85,7 @@ public class HealTotemTrait extends AbstractTotemTrait {
 	protected void tickOnPlayer(TotemInfos infos, Player player) {
 		RaCPlayer owner = infos.getOwner();
 		
-		double modValue = modifyToPlayer(owner, value);
+		double modValue = modifyToPlayer(owner, value, "value");
 		EntityHealOtherEntityEvent event = new EntityHealOtherEntityEvent(player, modValue, RegainReason.MAGIC_REGEN, owner.getPlayer());
 		plugin.fireEventToBukkit(event);
 		

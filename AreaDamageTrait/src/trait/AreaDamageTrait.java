@@ -135,7 +135,7 @@ public class AreaDamageTrait extends AbstractActivateAETrait {
 	protected boolean triggerOnEntity(final RaCPlayer player, final Entity otherEntity) {
 		if(!(otherEntity instanceof LivingEntity)) return false;
 		
-		double modDamage = modifyToPlayer(player, this.damage);
+		double modDamage = modifyToPlayer(player, this.damage, "damage");
 		final double damage = PreEntityDamageEvent.getRealDamage(player.getPlayer(), otherEntity, DamageCause.CONTACT, modDamage);
 		if(damage <= 0) return false;
 		

@@ -54,15 +54,15 @@ public class RegenerationTrait extends AbstractPassiveTrait {
 	}
 
 	@TraitConfigurationNeeded( fields = {
-			@TraitConfigurationField(fieldName = "operation", classToExpect = String.class), 
-			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class)
+			@TraitConfigurationField(fieldName = "operation", classToExpect = String.class, optional=true), 
+			@TraitConfigurationField(fieldName = "value", classToExpect = Double.class, optional=true)
 		})
 	@Override
 	public void setConfiguration(TraitConfiguration configMap) throws TraitConfigurationFailedException {
 		super.setConfiguration(configMap);
 		
-		operation = (String) configMap.get("operation");
-		value = (Double) configMap.get("value");
+		operation = configMap.getAsString("operation", "+");
+		value = configMap.getAsDouble("value",1);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class RegenerationTrait extends AbstractPassiveTrait {
 		EntityRegainHealthEvent Eevent = (EntityRegainHealthEvent) event;
 		double oldValue = CompatibilityModifier.EntityRegainHealth
 				.safeGetAmount(Eevent);
-		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue);
+		double newValue = getNewValue(eventWrapper.getPlayer(), oldValue, "value");
 
 		CompatibilityModifier.EntityRegainHealth.safeSetAmount(Eevent, newValue);
 

@@ -57,6 +57,7 @@ public class SprintTrait extends AbstractBasicTrait {
 	private final Set<String> sprinting = new HashSet<String>();
 	
 	
+	@SuppressWarnings("deprecation")
 	@TraitEventsUsed(registerdClasses = {PlayerToggleSprintEvent.class})
 	@Override
 	public void generalInit() {
@@ -102,7 +103,7 @@ public class SprintTrait extends AbstractBasicTrait {
 		if(player.getItemInHand().getType() != itemIDInHand) return TraitResults.False();
 		
 		LanguageAPI.sendTranslatedMessage(player, Keys.trait_toggled, "name", getDisplayName());
-		int modDur = modifyToPlayer(eventWrapper.getPlayer(), duration);
+		int modDur = modifyToPlayer(eventWrapper.getPlayer(), duration, "duration");
 		player.addPotionEffect(PotionEffectTypeWrapper.SPEED.createEffect(modDur * 20, value - 1), true);
 		sprinting.add(player.getName());
 		

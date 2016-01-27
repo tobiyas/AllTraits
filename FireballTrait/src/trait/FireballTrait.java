@@ -129,7 +129,7 @@ public class FireballTrait extends AbstractMagicSpellTrait implements Listener  
 	public void fireballHit(ProjectileHitEvent event){
 		if(event.getEntity().hasMetadata(META_KEY)){
 			RaCPlayer shooter = (RaCPlayer) event.getEntity().getMetadata(META_KEY).get(0).value();
-			double modDamge = modifyToPlayer(shooter, damage);
+			double modDamge = modifyToPlayer(shooter, damage, "damage");
 			
 			List<Entity> nearEntities = SearchEntity.inCircleAround(event.getEntity(), 4);
 			for(Entity near : nearEntities){

@@ -110,7 +110,7 @@ public class MagicAreaHealTrait extends AbstractActivateAETrait {
 	protected boolean triggerOnEntity(RaCPlayer player, Entity otherEntity) {
 		if(!(otherEntity instanceof LivingEntity)) return false;
 		
-		double modHeal = modifyToPlayer(player, this.value);
+		double modHeal = modifyToPlayer(player, this.value, "value");
 		EntityHealOtherEntityEvent event = new EntityHealOtherEntityEvent(otherEntity, modHeal, RegainReason.MAGIC, player.getPlayer());
 		plugin.fireEventToBukkit(event);
 		

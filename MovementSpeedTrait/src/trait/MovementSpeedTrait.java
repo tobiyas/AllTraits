@@ -127,7 +127,7 @@ public class MovementSpeedTrait extends TickEverySecondsTrait {
 	protected boolean tickDoneForPlayer(final RaCPlayer player) {
 		boolean isOnDisabledWorld = checkDisabledPerWorld(player.getWorld());
 		
-		final float convertedValue = isOnDisabledWorld ? DEFAULT_SPEED : (float) modifyToPlayer(player, value);
+		final float convertedValue = isOnDisabledWorld ? DEFAULT_SPEED : (float) modifyToPlayer(player, value, "value");
 		setNewSpeed(player, convertedValue);
 		return false;
 	}
