@@ -115,6 +115,7 @@
 		<module>MagicHealTrait</module>
 		<module>MagicAreaHealTrait</module>
 		<module>SlowFallTrait</module>
+		<module>SkillAPISpellTrait</module>
 		<module>StunSpellTrait</module>
 		<module>TeleportTrait</module>
 		<module>ThrowItemsAroundSpellTrait</module>
